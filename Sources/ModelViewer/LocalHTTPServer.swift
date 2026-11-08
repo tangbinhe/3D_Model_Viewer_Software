@@ -1,4 +1,5 @@
 import Combine
+import CoreFoundation
 import Foundation
 import Network
 
@@ -165,10 +166,10 @@ final class LocalHTTPServer: ObservableObject, @unchecked Sendable {
     }
 
     private func validate(_ command: [String: Any]) -> String? {
-        let allowedKeys: Set<String> = ["expression", "action", "duration", "weight", "background", "view", "clean", "danmaku", "danmakuVisible"]
+        let allowedKeys: Set<String> = ["expression", "action", "duration", "weight", "background", "view", "clean", "danmaku", "danmakuVisible", "danmakuId"]
         guard command.keys.allSatisfy({ allowedKeys.contains($0) }) else { return "Unknown command field" }
-        guard command.keys.contains(where: { ["expression", "action", "background", "view", "clean", "danmaku", "danmakuVisible"].contains($0) }) else {
-            return "Command must include expression, action, background, view, clean, danmaku, or danmakuVisible"
+        guard command.keys.contains(where: { ["expression", "action", "background", "view", "clean", "danmaku", "danmakuVisible", "danmakuId"].contains($0) }) else {
+            return "Command must include expression, action, background, view, clean, danmaku, danmakuVisible, or danmakuId"
         }
         if let expression = command["expression"] {
             guard let value = expression as? String, value.count <= 64 else { return "Invalid expression" }
@@ -207,6 +208,14 @@ final class LocalHTTPServer: ObservableObject, @unchecked Sendable {
             }
         }
         if let danmakuVisible = command["danmakuVisible"], !(danmakuVisible is Bool) { return "DanmakuVisible must be a boolean" }
+        if let danmakuId = command["danmakuId"] {
+            guard let value = danmakuId as? NSNumber,
+                  CFGetTypeID(value) != CFBooleanGetTypeID(),
+                  value.doubleValue >= 1,
+                  value.doubleValue.rounded(.towardZero) == value.doubleValue else {
+                return "DanmakuId must be a positive integer"
+            }
+        }
         if let clean = command["clean"], !(clean is Bool) { return "Clean must be a boolean" }
         return nil
     }
