@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin } from '@pixiv/three-vrm';
+import { createVRMAnimationClip, VRMAnimationLoaderPlugin } from '@pixiv/three-vrm-animation';
 
 const $ = (selector) => document.querySelector(selector);
 const viewport = $('#viewport');
@@ -47,6 +48,9 @@ let currentFormat = '';
 let currentView = 'front';
 let currentBackground = '#0b1020';
 let activeAction = null;
+let activeMotion = null;
+let motionEntries = [];
+let motionLoadVersion = 0;
 let toastTimer;
 let lastCommand = null;
 let statusPostPending = false;
@@ -158,10 +162,12 @@ function clearModel() {
   vrms.length = 0;
   animationMixers.length = 0;
   loadedClips = [];
+  motionEntries = [];
   currentModelName = '';
   currentFormat = '';
   modelRoot.rotation.set(0, 0, 0);
   updateExpressionUI();
+  updateMotionUI();
 }
 
 function normalizeContent() {
@@ -235,8 +241,12 @@ async function installModels(results, name, format) {
   currentFormat = format;
   $('#empty-state').classList.add('hidden');
   $('#model-name').textContent = name;
-  $('#model-detail').textContent = `${format.toUpperCase()} · ${vrms.length ? `${vrms[0].expressionManager?.expressions.length || 0} 个 VRM 表情` : '静态模型'}`;
   updateExpressionUI();
+  if (vrms[0]?.humanoid) await loadMotionLibrary();
+  const expressionCount = vrms[0]?.expressionManager?.expressions.length || 0;
+  $('#model-detail').textContent = vrms.length
+    ? `${format.toUpperCase()} · ${expressionCount} 个表情 · ${motionEntries.length} 个动作/姿势`
+    : `${format.toUpperCase()} · 静态模型`;
   setView('front');
   publishStatus();
 }
@@ -286,6 +296,73 @@ function updateExpressionUI() {
     : '静态模型支持旋转；骨骼动作需要绑定后的 VRM。';
 }
 
+async function loadMotionLibrary() {
+  const response = await fetch('/motions/manifest.json');
+  if (!response.ok) throw new Error('角色动作库载入失败');
+  const manifest = await response.json();
+  motionEntries = manifest.entries.map((entry) => ({
+    ...entry,
+    id: entry.file.replace(/\.vrma$/i, ''),
+  }));
+  updateMotionUI();
+}
+
+function updateMotionUI() {
+  const select = $('#motion-select');
+  const hasRig = Boolean(vrms[0]?.humanoid);
+  select.replaceChildren();
+  select.disabled = !hasRig || !motionEntries.length;
+  $('#play-motion').disabled = select.disabled;
+  if (!motionEntries.length) {
+    select.add(new Option(hasRig ? '动作库不可用' : '载入 VRM 后可选', ''));
+  } else {
+    const groups = new Map();
+    for (const entry of motionEntries) {
+      if (!groups.has(entry.group)) {
+        const group = document.createElement('optgroup');
+        group.label = entry.group;
+        groups.set(entry.group, group);
+        select.add(group);
+      }
+      groups.get(entry.group).append(new Option(entry.name, entry.id));
+    }
+  }
+  $('#rig-hint').textContent = hasRig
+    ? `已识别 VRM 骨骼；动作库包含 ${motionEntries.filter((entry) => entry.kind === 'motion').length} 个动画和 ${motionEntries.filter((entry) => entry.kind === 'pose').length} 个姿势。`
+    : '静态模型支持旋转；骨骼动作需要绑定后的 VRM。';
+}
+
+async function playMotion(id) {
+  const entry = motionEntries.find((item) => item.id === id);
+  const vrm = vrms[0];
+  if (!entry) throw new Error(`动作库中不存在动作：${id}`);
+  if (!vrm?.humanoid) throw new Error('骨骼动作需要绑定后的 VRM');
+  stopAction();
+  const version = ++motionLoadVersion;
+  const response = await fetch(`/motions/${entry.file}`);
+  if (!response.ok) throw new Error(`动作文件载入失败：${entry.name}`);
+  const loader = new GLTFLoader();
+  loader.register((parser) => new VRMAnimationLoaderPlugin(parser));
+  const gltf = await loader.parseAsync(await response.arrayBuffer(), '');
+  const animation = gltf.userData.vrmAnimations?.[0];
+  if (!animation) throw new Error(`动作文件没有 VRM 动画：${entry.name}`);
+  if (version !== motionLoadVersion) return false;
+  const clip = createVRMAnimationClip(animation, vrm);
+  clip.name = entry.name;
+  const mixer = new THREE.AnimationMixer(vrm.scene);
+  const action = mixer.clipAction(clip);
+  if (entry.kind === 'pose') {
+    action.setLoop(THREE.LoopOnce, 1);
+    action.clampWhenFinished = true;
+  }
+  activeMotion = { id: entry.id, name: entry.name, kind: entry.kind, mixer, action, clip };
+  animationMixers.push(mixer);
+  action.play();
+  $('#motion-select').value = entry.id;
+  publishStatus();
+  return true;
+}
+
 function setExpression(name, weight = 1) {
   const manager = vrms[0]?.expressionManager;
   if (!manager) throw new Error('当前模型没有 VRM 表情，请先载入绑定完成的 VRM');
@@ -305,14 +382,25 @@ function bone(name) {
 }
 
 function stopAction() {
-  if (!activeAction) return;
-  for (const [node, quaternion] of activeAction.bones) node.quaternion.copy(quaternion);
-  if (activeAction.name === 'spin') modelRoot.rotation.y = activeAction.initialRotation;
-  activeAction = null;
-  publishStatus();
+  motionLoadVersion += 1;
+  const hadAction = Boolean(activeAction || activeMotion);
+  if (activeMotion) {
+    activeMotion.action.stop();
+    activeMotion.mixer.uncacheClip(activeMotion.clip);
+    const index = animationMixers.indexOf(activeMotion.mixer);
+    if (index >= 0) animationMixers.splice(index, 1);
+    activeMotion = null;
+  }
+  if (activeAction) {
+    for (const [node, quaternion] of activeAction.bones) node.quaternion.copy(quaternion);
+    if (activeAction.name === 'spin') modelRoot.rotation.y = activeAction.initialRotation;
+    activeAction = null;
+  }
+  if (hadAction) publishStatus();
 }
 
 function startAction(name, duration = 2) {
+  if (motionEntries.some((entry) => entry.id === name)) return playMotion(name);
   const supported = ['idle', 'nod', 'wave', 'bow', 'spin'];
   if (!supported.includes(name)) throw new Error(`不支持的动作：${name}`);
   if (name !== 'spin' && !vrms[0]?.humanoid) throw new Error('当前模型尚未绑定，骨骼动作需要 VRM');
@@ -374,7 +462,7 @@ async function applyCommand(command) {
     if (command.expression !== undefined) setExpression(String(command.expression), command.weight ?? 1);
     if (command.action !== undefined) {
       if (command.action === 'stop') stopAction();
-      else startAction(String(command.action), command.duration ?? 2);
+      else await startAction(String(command.action), command.duration ?? 2);
     }
     lastCommand = { ok: true, command, at: new Date().toISOString() };
     results.push('执行成功');
@@ -403,7 +491,9 @@ async function publishStatus() {
         vrm: vrms.length > 0,
         expressions: vrms[0]?.expressionManager?.expressions.map((expression) => expression.expressionName) || [],
         animations: loadedClips.map((clip) => clip.name),
-        action: activeAction?.name || null,
+        motions: motionEntries.map(({ id, name, group, kind }) => ({ id, name, group, kind })),
+        action: activeMotion?.id || activeAction?.name || null,
+        actionName: activeMotion?.name || activeAction?.name || null,
         background: currentBackground,
         view: currentView,
         clean: document.body.classList.contains('clean'),
@@ -449,14 +539,21 @@ $('#clear-background').addEventListener('click', () => setBackground($('#backgro
 $('#background-color').addEventListener('input', (event) => setBackground(event.target.value, false));
 document.querySelectorAll('[data-color]').forEach((button) => button.addEventListener('click', () => setBackground(button.dataset.color)));
 document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
-document.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', () => {
+document.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', async () => {
   try {
     if (button.dataset.action === 'stop') stopAction();
-    else startAction(button.dataset.action);
+    else await startAction(button.dataset.action);
   } catch (error) {
     showToast(error.message, true);
   }
 }));
+$('#play-motion').addEventListener('click', async () => {
+  try {
+    await playMotion($('#motion-select').value);
+  } catch (error) {
+    showToast(error.message, true);
+  }
+});
 $('#expression-select').addEventListener('change', (event) => {
   try { setExpression(event.target.value); } catch (error) { showToast(error.message, true); }
 });

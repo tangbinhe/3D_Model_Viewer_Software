@@ -174,7 +174,8 @@ final class LocalHTTPServer: ObservableObject, @unchecked Sendable {
             guard let value = expression as? String, value.count <= 64 else { return "Invalid expression" }
         }
         if let action = command["action"] {
-            guard let value = action as? String, ["idle", "nod", "wave", "bow", "spin", "stop"].contains(value) else {
+            guard let value = action as? String,
+                  ["idle", "nod", "wave", "bow", "spin", "stop"].contains(value) || value.range(of: "^[A-Za-z0-9-]{1,64}$", options: .regularExpression) != nil else {
                 return "Invalid action"
             }
         }

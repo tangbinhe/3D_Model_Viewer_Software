@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Model Viewer</title>
-    <script type="module" crossorigin src="/assets/index-CYmhdcPs.js"></script>
+    <script type="module" crossorigin src="/assets/index-keMsBoQy.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-18CiaUOV.css">
   </head>
   <body>
@@ -82,7 +82,12 @@
               <select id="expression-select"><option value="">未载入 VRM 表情</option></select>
               <button id="reset-expression" class="button ghost">重置</button>
             </div>
-            <label class="field-label">动作</label>
+            <label class="field-label" for="motion-select">角色动作库</label>
+            <div class="inline-control">
+              <select id="motion-select" disabled><option value="">载入 VRM 后可选</option></select>
+              <button id="play-motion" class="button secondary" disabled>播放</button>
+            </div>
+            <label class="field-label">基础动作</label>
             <div class="action-grid">
               <button data-action="idle">待机</button>
               <button data-action="nod">点头</button>
@@ -99,12 +104,11 @@
             <code class="endpoint">POST http://127.0.0.1:8765/api/command</code>
             <pre>{
   "expression": "happy",
-  "action": "wave",
-  "duration": 2,
+  "action": "pixiv-fit-02",
   "background": "#00ff00",
   "view": "front"
 }</pre>
-            <small class="hint">仅监听本机回环地址。GET /api/status 可查询当前状态。</small>
+            <small class="hint">动作编号和名称可从 GET /api/status 的 motions 中查询。</small>
           </details>
         </aside>
       </main>

@@ -1,0 +1,853 @@
+{
+  "entries": [
+    {
+      "file": "pixiv-01.vrma",
+      "name": "全身展示",
+      "group": "pixiv VRoid · 动作",
+      "kind": "motion"
+    },
+    {
+      "file": "pixiv-02.vrma",
+      "name": "打招呼",
+      "group": "pixiv VRoid · 动作",
+      "kind": "motion"
+    },
+    {
+      "file": "pixiv-03.vrma",
+      "name": "比耶",
+      "group": "pixiv VRoid · 动作",
+      "kind": "motion"
+    },
+    {
+      "file": "pixiv-04.vrma",
+      "name": "射击手势",
+      "group": "pixiv VRoid · 动作",
+      "kind": "motion"
+    },
+    {
+      "file": "pixiv-05.vrma",
+      "name": "转身",
+      "group": "pixiv VRoid · 动作",
+      "kind": "motion"
+    },
+    {
+      "file": "pixiv-06.vrma",
+      "name": "模特展示",
+      "group": "pixiv VRoid · 动作",
+      "kind": "motion"
+    },
+    {
+      "file": "pixiv-07.vrma",
+      "name": "屈膝下蹲",
+      "group": "pixiv VRoid · 动作",
+      "kind": "motion"
+    },
+    {
+      "file": "sample-01.vrma",
+      "name": "Pose-001",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-02.vrma",
+      "name": "Pose-002",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-03.vrma",
+      "name": "Pose-003",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-04.vrma",
+      "name": "Pose-019",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-05.vrma",
+      "name": "Pose-020",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-06.vrma",
+      "name": "Pose-021",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-07.vrma",
+      "name": "Pose-014",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-08.vrma",
+      "name": "Pose-030",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-09.vrma",
+      "name": "Pose-039",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-10.vrma",
+      "name": "Pose-006",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-11.vrma",
+      "name": "Pose-031",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-12.vrma",
+      "name": "Pose-046",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-13.vrma",
+      "name": "Pose-041",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-14.vrma",
+      "name": "Pose-042",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-15.vrma",
+      "name": "Pose-043",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-16.vrma",
+      "name": "Pose_005",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-17.vrma",
+      "name": "Pose_024",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sample-18.vrma",
+      "name": "Pose_034",
+      "group": "Posecollection · 样例姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "toringo-01.vrma",
+      "name": "26_TORINGO_POSE",
+      "group": "TORINGO · 姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "toringo-02.vrma",
+      "name": "27_TORINGO_POSE",
+      "group": "TORINGO · 姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "toringo-03.vrma",
+      "name": "28_TORINGO_POSE",
+      "group": "TORINGO · 姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "toringo-04.vrma",
+      "name": "29_TORINGO_POSE",
+      "group": "TORINGO · 姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "toringo-05.vrma",
+      "name": "30_TORINGO_POSE",
+      "group": "TORINGO · 姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-01.vrma",
+      "name": "A 字站姿",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-02.vrma",
+      "name": "T 字站姿",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-03.vrma",
+      "name": "Pose1",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-04.vrma",
+      "name": "Pose2",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-05.vrma",
+      "name": "Pose3",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-06.vrma",
+      "name": "Pose4",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-07.vrma",
+      "name": "Pose5",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-08.vrma",
+      "name": "Pose6",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-09.vrma",
+      "name": "Pose7",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-10.vrma",
+      "name": "Pose8",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-11.vrma",
+      "name": "Pose9",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-12.vrma",
+      "name": "Pose10",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-13.vrma",
+      "name": "Pose11",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-14.vrma",
+      "name": "Pose12",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-15.vrma",
+      "name": "Pose13",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-16.vrma",
+      "name": "Pose14",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-17.vrma",
+      "name": "Pose15",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-18.vrma",
+      "name": "Pose16",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-19.vrma",
+      "name": "Pose17",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-20.vrma",
+      "name": "Pose18",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-21.vrma",
+      "name": "Pose19",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-22.vrma",
+      "name": "Pose20",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-23.vrma",
+      "name": "Pose21",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-24.vrma",
+      "name": "Pose22",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-25.vrma",
+      "name": "Pose23",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-26.vrma",
+      "name": "Pose24",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-27.vrma",
+      "name": "Pose25",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-28.vrma",
+      "name": "Pose26",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-29.vrma",
+      "name": "Pose27",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-30.vrma",
+      "name": "Pose28",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-31.vrma",
+      "name": "Pose29",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-32.vrma",
+      "name": "Pose30",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-33.vrma",
+      "name": "Pose31",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-34.vrma",
+      "name": "Pose32",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-35.vrma",
+      "name": "Pose33",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-36.vrma",
+      "name": "Pose34",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-37.vrma",
+      "name": "Pose35",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-38.vrma",
+      "name": "Pose36",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-39.vrma",
+      "name": "Pose37",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-40.vrma",
+      "name": "Pose38",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-41.vrma",
+      "name": "Pose39",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "vroid86-42.vrma",
+      "name": "Pose40",
+      "group": "VRoid · 86 姿势免费版",
+      "kind": "pose"
+    },
+    {
+      "file": "sf-01.vrma",
+      "name": "升龙拳",
+      "group": "街机格斗 · 定格姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sf-02.vrma",
+      "name": "波动拳（前）",
+      "group": "街机格斗 · 定格姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sf-03.vrma",
+      "name": "波动拳（侧）",
+      "group": "街机格斗 · 定格姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "sf-04.vrma",
+      "name": "龙卷旋风脚",
+      "group": "街机格斗 · 定格姿势",
+      "kind": "pose"
+    },
+    {
+      "file": "pixiv-fit-01.vrma",
+      "name": "全身展示（旗袍适配）",
+      "group": "可选适配 · 动画",
+      "kind": "motion",
+      "collision": "checked"
+    },
+    {
+      "file": "pixiv-fit-02.vrma",
+      "name": "站姿打招呼（旗袍适配）",
+      "group": "可选适配 · 动画",
+      "kind": "motion",
+      "collision": "checked"
+    },
+    {
+      "file": "pixiv-fit-03.vrma",
+      "name": "比耶（旗袍适配）",
+      "group": "可选适配 · 动画",
+      "kind": "motion",
+      "collision": "checked"
+    },
+    {
+      "file": "pixiv-fit-04.vrma",
+      "name": "射击手势（旗袍适配）",
+      "group": "可选适配 · 动画",
+      "kind": "motion",
+      "collision": "checked"
+    },
+    {
+      "file": "pixiv-fit-05.vrma",
+      "name": "轻转身（旗袍适配）",
+      "group": "可选适配 · 动画",
+      "kind": "motion",
+      "collision": "checked"
+    },
+    {
+      "file": "pixiv-fit-06.vrma",
+      "name": "模特展示（旗袍适配）",
+      "group": "可选适配 · 动画",
+      "kind": "motion",
+      "collision": "checked"
+    },
+    {
+      "file": "pixiv-fit-07.vrma",
+      "name": "小幅屈膝（旗袍适配）",
+      "group": "可选适配 · 动画",
+      "kind": "motion",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-01.vrma",
+      "name": "Pose-001（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-03.vrma",
+      "name": "Pose-003（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-04.vrma",
+      "name": "Pose-019（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-06.vrma",
+      "name": "Pose-021（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-07.vrma",
+      "name": "Pose-014（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-09.vrma",
+      "name": "Pose-039（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-10.vrma",
+      "name": "Pose-006（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-11.vrma",
+      "name": "Pose-031（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-13.vrma",
+      "name": "Pose-041（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-14.vrma",
+      "name": "Pose-042（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-15.vrma",
+      "name": "Pose-043（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-16.vrma",
+      "name": "Pose_005（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-17.vrma",
+      "name": "Pose_024（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sample-18.vrma",
+      "name": "Pose_034（适配）",
+      "group": "可选适配 · Posecollection",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-toringo-02.vrma",
+      "name": "27_TORINGO_POSE（适配）",
+      "group": "可选适配 · TORINGO",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-toringo-03.vrma",
+      "name": "28_TORINGO_POSE（适配）",
+      "group": "可选适配 · TORINGO",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-toringo-05.vrma",
+      "name": "30_TORINGO_POSE（适配）",
+      "group": "可选适配 · TORINGO",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-03.vrma",
+      "name": "Pose1（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-04.vrma",
+      "name": "Pose2（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-05.vrma",
+      "name": "Pose3（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-07.vrma",
+      "name": "Pose5（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-08.vrma",
+      "name": "Pose6（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-10.vrma",
+      "name": "Pose8（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-12.vrma",
+      "name": "Pose10（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-13.vrma",
+      "name": "Pose11（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-15.vrma",
+      "name": "Pose13（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-16.vrma",
+      "name": "Pose14（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-17.vrma",
+      "name": "Pose15（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-18.vrma",
+      "name": "Pose16（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-19.vrma",
+      "name": "Pose17（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-22.vrma",
+      "name": "Pose20（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-23.vrma",
+      "name": "Pose21（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-24.vrma",
+      "name": "Pose22（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-25.vrma",
+      "name": "Pose23（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-27.vrma",
+      "name": "Pose25（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-29.vrma",
+      "name": "Pose27（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-30.vrma",
+      "name": "Pose28（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-31.vrma",
+      "name": "Pose29（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-32.vrma",
+      "name": "Pose30（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-33.vrma",
+      "name": "Pose31（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-34.vrma",
+      "name": "Pose32（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-35.vrma",
+      "name": "Pose33（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-36.vrma",
+      "name": "Pose34（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-40.vrma",
+      "name": "Pose38（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-vroid86-42.vrma",
+      "name": "Pose40（适配）",
+      "group": "可选适配 · VRoid",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sf-01.vrma",
+      "name": "升龙拳（适配）",
+      "group": "可选适配 · 街机格斗",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sf-02.vrma",
+      "name": "波动拳（前）（适配）",
+      "group": "可选适配 · 街机格斗",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sf-03.vrma",
+      "name": "波动拳（侧）（适配）",
+      "group": "可选适配 · 街机格斗",
+      "kind": "pose",
+      "collision": "checked"
+    },
+    {
+      "file": "fit-sf-04.vrma",
+      "name": "龙卷旋风脚（适配）",
+      "group": "可选适配 · 街机格斗",
+      "kind": "pose",
+      "collision": "checked"
+    }
+  ],
+  "credit": "Animation credits to pixiv Inc.'s VRoid Project"
+}
