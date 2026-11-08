@@ -33,15 +33,12 @@
           <div id="toast" role="status"></div>
           <template id="danmaku-template">
             <section class="danmaku-panel" aria-label="互动弹幕窗口">
-              <header class="danmaku-drag-handle">
+              <header class="danmaku-header">
                 <div><span class="danmaku-live-dot"></span><strong></strong></div>
               </header>
               <div class="danmaku-messages" aria-live="polite">
-                <p class="danmaku-empty" contenteditable="plaintext-only" spellcheck="false" aria-label="无弹幕提示文字">暂无弹幕，可通过本地 API 添加。</p>
+                <p class="danmaku-empty">暂无弹幕，可通过本地 API 添加。</p>
               </div>
-              <div class="danmaku-resize-handle danmaku-resize-right" data-danmaku-resize="right" aria-hidden="true"></div>
-              <div class="danmaku-resize-handle danmaku-resize-bottom" data-danmaku-resize="bottom" aria-hidden="true"></div>
-              <div class="danmaku-resize-handle danmaku-resize-corner" data-danmaku-resize="corner" aria-hidden="true"></div>
             </section>
           </template>
           <div class="clean-help">按 H 显示控制界面</div>
@@ -120,7 +117,20 @@
               <button id="toggle-danmaku" class="button primary">添加弹幕窗口</button>
             </div>
             <div id="danmaku-window-list" class="danmaku-window-list"></div>
-            <small class="hint">可添加多个独立浮窗，仅展示 API 弹幕；无弹幕时点击提示文字即可编辑。标题栏调整位置，右边、底边和右下角调整宽高。</small>
+            <div id="danmaku-editor" class="danmaku-editor hidden">
+              <label class="field-label" for="danmaku-title">窗口标题</label>
+              <input id="danmaku-title" type="text" maxlength="40" autocomplete="off" />
+              <label class="field-label" for="danmaku-empty-text">无弹幕提示词</label>
+              <textarea id="danmaku-empty-text" rows="3" maxlength="200"></textarea>
+              <div class="danmaku-geometry-grid">
+                <label>X<input id="danmaku-x" type="number" min="8" step="1" /></label>
+                <label>Y<input id="danmaku-y" type="number" min="8" step="1" /></label>
+                <label>宽度<input id="danmaku-width" type="number" min="200" step="1" /></label>
+                <label>高度<input id="danmaku-height" type="number" min="150" step="1" /></label>
+              </div>
+              <small class="hint">位置和尺寸单位为像素，浮窗始终限制在 3D 视口内。</small>
+            </div>
+            <small class="hint">选择窗口后可编辑标题、提示词、位置和宽高；浮窗仅展示 API 弹幕，各窗口互不影响。</small>
           </section>
 
           <details class="api-details">
@@ -265,14 +275,14 @@
                 <code>background / view / clean</code><span>当前背景、视角和界面隐藏状态</span>
                 <code>danmakuId</code><span>当前 API 目标窗口编号，无窗口为 null</span>
                 <code>danmakuVisible / danmakuMessages</code><span>当前目标窗口的显示状态和最近 50 条消息</span>
-                <code>danmakuWindows</code><span>全部窗口的编号、显示状态、自定义空提示和消息</span>
+                <code>danmakuWindows</code><span>全部窗口的编号、标题、显示状态、自定义空提示、位置尺寸和消息</span>
                 <code>lastCommand</code><span>最近一条指令的实际执行结果</span>
               </div>
             </details>
 
             <details class="api-doc-section">
               <summary>8. 弹幕互动 API</summary>
-              <p>可添加多个独立浮窗，右侧列表分别选择、显示或隐藏。浮窗仅展示 API 弹幕，不提供手动发送；无弹幕时可点击提示文字自定义。标题栏调整位置，右边、底边和右下角调整宽高，各窗口的消息、提示、位置和大小互不影响。</p>
+              <p>可添加多个独立浮窗，右侧列表分别选择、显示或隐藏。选择窗口后，在右侧编辑标题、无弹幕提示词、位置和宽高；浮窗仅展示 API 弹幕，不提供手动发送。各窗口的标题、消息、提示、位置和大小互不影响。</p>
               <p>向当前窗口展示文字；没有窗口时自动创建：</p>
               <pre>curl -X POST http://127.0.0.1:8765/api/command \
   -H 'Content-Type: application/json' \

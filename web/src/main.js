@@ -83,15 +83,39 @@ function getDanmakuWindow(id) {
 }
 
 function clampDanmakuPanel(panel) {
-  if (panel.classList.contains('hidden')) return;
   const maxWidth = Math.max(200, viewport.clientWidth - 16);
   const maxHeight = Math.max(150, viewport.clientHeight - 16);
-  if (panel.offsetWidth > maxWidth) panel.style.width = `${maxWidth}px`;
-  if (panel.offsetHeight > maxHeight) panel.style.height = `${maxHeight}px`;
-  const maxLeft = Math.max(8, viewport.clientWidth - panel.offsetWidth - 8);
-  const maxTop = Math.max(8, viewport.clientHeight - panel.offsetHeight - 8);
-  panel.style.left = `${Math.min(Math.max(panel.offsetLeft, 8), maxLeft)}px`;
-  panel.style.top = `${Math.min(Math.max(panel.offsetTop, 8), maxTop)}px`;
+  const width = panel.offsetWidth || parseFloat(panel.style.width) || Math.min(340, viewport.clientWidth - 48);
+  const height = panel.offsetHeight || parseFloat(panel.style.height) || 150;
+  const clampedWidth = Math.min(Math.max(width, 200), maxWidth);
+  const clampedHeight = Math.min(Math.max(height, 150), maxHeight);
+  panel.style.width = `${clampedWidth}px`;
+  panel.style.height = `${clampedHeight}px`;
+  const maxLeft = Math.max(8, viewport.clientWidth - clampedWidth - 8);
+  const maxTop = Math.max(8, viewport.clientHeight - clampedHeight - 8);
+  const left = parseFloat(panel.style.left) || panel.offsetLeft || 24;
+  const top = parseFloat(panel.style.top) || panel.offsetTop || 24;
+  panel.style.left = `${Math.min(Math.max(left, 8), maxLeft)}px`;
+  panel.style.top = `${Math.min(Math.max(top, 8), maxTop)}px`;
+}
+
+function renderDanmakuEditor() {
+  const item = getActiveDanmakuWindow();
+  $('#danmaku-editor').classList.toggle('hidden', !item);
+  if (!item) return;
+  const panel = item.element;
+  const values = {
+    '#danmaku-title': item.title,
+    '#danmaku-empty-text': item.emptyText,
+    '#danmaku-x': Math.round(parseFloat(panel.style.left) || panel.offsetLeft),
+    '#danmaku-y': Math.round(parseFloat(panel.style.top) || panel.offsetTop),
+    '#danmaku-width': Math.round(panel.offsetWidth || parseFloat(panel.style.width)),
+    '#danmaku-height': Math.round(panel.offsetHeight || parseFloat(panel.style.height)),
+  };
+  for (const [selector, value] of Object.entries(values)) {
+    const field = $(selector);
+    if (document.activeElement !== field) field.value = String(value);
+  }
 }
 
 function renderDanmakuWindowList() {
@@ -102,6 +126,7 @@ function renderDanmakuWindowList() {
     empty.className = 'danmaku-window-list-empty';
     empty.textContent = '尚未添加弹幕窗口';
     list.append(empty);
+    renderDanmakuEditor();
     return;
   }
   for (const item of danmakuWindows) {
@@ -111,7 +136,8 @@ function renderDanmakuWindowList() {
     select.type = 'button';
     select.className = 'danmaku-window-select';
     select.classList.toggle('active', item.id === activeDanmakuId);
-    select.textContent = `窗口 ${item.id}`;
+    select.textContent = item.title.trim() || `窗口 ${item.id}`;
+    select.title = item.title;
     select.addEventListener('click', () => setActiveDanmakuWindow(item.id));
     const toggle = document.createElement('button');
     toggle.type = 'button';
@@ -122,6 +148,7 @@ function renderDanmakuWindowList() {
     row.append(select, toggle);
     list.append(row);
   }
+  renderDanmakuEditor();
 }
 
 function setActiveDanmakuWindow(id, notify = true) {
@@ -140,16 +167,19 @@ function createDanmakuWindow() {
   element.dataset.danmakuId = String(id);
   element.style.left = `${24 + offset}px`;
   element.style.top = `${24 + offset}px`;
-  element.querySelector('strong').textContent = `互动弹幕 ${id}`;
+  const title = `互动弹幕 ${id}`;
+  element.querySelector('strong').textContent = title;
   const item = {
     id,
+    title,
     element,
     messages: [],
     emptyText: element.querySelector('.danmaku-empty').textContent,
   };
   danmakuWindows.push(item);
   viewport.append(element);
-  bindDanmakuWindow(item);
+  element.style.width = `${element.offsetWidth}px`;
+  element.style.height = `${element.offsetHeight}px`;
   clampDanmakuPanel(element);
   setActiveDanmakuWindow(id, false);
   publishStatus();
@@ -164,6 +194,7 @@ function setDanmakuVisible(visible, id) {
   item.element.setAttribute('aria-hidden', String(!visible));
   setActiveDanmakuWindow(item.id, false);
   if (visible) clampDanmakuPanel(item.element);
+  renderDanmakuEditor();
   publishStatus();
   return item;
 }
@@ -207,6 +238,7 @@ function resize() {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   for (const item of danmakuWindows) clampDanmakuPanel(item.element);
+  renderDanmakuEditor();
 }
 new ResizeObserver(resize).observe(viewport);
 resize();
@@ -638,8 +670,13 @@ async function publishStatus() {
         danmakuMessages: activeDanmaku?.messages.map(({ text, at }) => ({ text, at })) || [],
         danmakuWindows: danmakuWindows.map((item) => ({
           id: item.id,
+          title: item.title,
           visible: !item.element.classList.contains('hidden'),
           emptyText: item.emptyText,
+          x: Math.round(parseFloat(item.element.style.left)),
+          y: Math.round(parseFloat(item.element.style.top)),
+          width: Math.round(parseFloat(item.element.style.width)),
+          height: Math.round(parseFloat(item.element.style.height)),
           messages: item.messages.map(({ text, at }) => ({ text, at })),
         })),
         lastCommand,
@@ -706,82 +743,41 @@ $('#reset-expression').addEventListener('click', () => {
   try { setExpression(''); } catch (error) { showToast(error.message, true); }
 });
 $('#toggle-danmaku').addEventListener('click', () => createDanmakuWindow());
-renderDanmakuWindowList();
-
-function bindDanmakuWindow(item) {
-  const panel = item.element;
-  const dragHandle = panel.querySelector('.danmaku-drag-handle');
-  const empty = panel.querySelector('.danmaku-empty');
-  panel.addEventListener('pointerdown', () => setActiveDanmakuWindow(item.id));
-  empty.addEventListener('input', () => { item.emptyText = empty.textContent; });
-  empty.addEventListener('blur', () => publishStatus());
-
-  let drag = null;
-  dragHandle.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0) return;
-    const rect = panel.getBoundingClientRect();
-    drag = { pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top };
-    dragHandle.setPointerCapture(event.pointerId);
-    event.preventDefault();
+$('#danmaku-title').addEventListener('input', (event) => {
+  const item = getActiveDanmakuWindow();
+  if (!item) return;
+  item.title = event.target.value;
+  item.element.querySelector('strong').textContent = item.title;
+  renderDanmakuWindowList();
+  publishStatus();
+});
+$('#danmaku-empty-text').addEventListener('input', (event) => {
+  const item = getActiveDanmakuWindow();
+  if (!item) return;
+  item.emptyText = event.target.value;
+  item.element.querySelector('.danmaku-empty').textContent = item.emptyText;
+  publishStatus();
+});
+for (const [selector, property] of [
+  ['#danmaku-x', 'left'],
+  ['#danmaku-y', 'top'],
+  ['#danmaku-width', 'width'],
+  ['#danmaku-height', 'height'],
+]) {
+  const field = $(selector);
+  field.addEventListener('input', () => {
+    const item = getActiveDanmakuWindow();
+    if (!item || field.value === '') return;
+    const value = Number(field.value);
+    if (!Number.isFinite(value)) return;
+    item.element.style[property] = `${Math.round(value)}px`;
+    clampDanmakuPanel(item.element);
+    renderDanmakuEditor();
+    publishStatus();
   });
-  dragHandle.addEventListener('pointermove', (event) => {
-    if (!drag || event.pointerId !== drag.pointerId) return;
-    const viewportRect = viewport.getBoundingClientRect();
-    const maxLeft = Math.max(8, viewport.clientWidth - panel.offsetWidth - 8);
-    const maxTop = Math.max(8, viewport.clientHeight - panel.offsetHeight - 8);
-    const left = event.clientX - viewportRect.left - drag.offsetX;
-    const top = event.clientY - viewportRect.top - drag.offsetY;
-    panel.style.left = `${Math.min(Math.max(left, 8), maxLeft)}px`;
-    panel.style.top = `${Math.min(Math.max(top, 8), maxTop)}px`;
-  });
-  function stopDrag(event) {
-    if (!drag || event.pointerId !== drag.pointerId) return;
-    if (dragHandle.hasPointerCapture(event.pointerId)) dragHandle.releasePointerCapture(event.pointerId);
-    drag = null;
-  }
-  dragHandle.addEventListener('pointerup', stopDrag);
-  dragHandle.addEventListener('pointercancel', stopDrag);
-
-  let resizeState = null;
-  for (const handle of panel.querySelectorAll('[data-danmaku-resize]')) {
-    handle.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0) return;
-      setActiveDanmakuWindow(item.id);
-      resizeState = {
-        pointerId: event.pointerId,
-        direction: handle.dataset.danmakuResize,
-        startX: event.clientX,
-        startY: event.clientY,
-        startWidth: panel.offsetWidth,
-        startHeight: panel.offsetHeight,
-      };
-      handle.setPointerCapture(event.pointerId);
-      event.preventDefault();
-      event.stopPropagation();
-    });
-    handle.addEventListener('pointermove', (event) => {
-      if (!resizeState || event.pointerId !== resizeState.pointerId) return;
-      const maxWidth = Math.max(200, viewport.clientWidth - panel.offsetLeft - 8);
-      const maxHeight = Math.max(150, viewport.clientHeight - panel.offsetTop - 8);
-      if (resizeState.direction !== 'bottom') {
-        const width = resizeState.startWidth + event.clientX - resizeState.startX;
-        panel.style.width = `${Math.min(Math.max(width, 200), maxWidth)}px`;
-      }
-      if (resizeState.direction !== 'right') {
-        const height = resizeState.startHeight + event.clientY - resizeState.startY;
-        panel.style.height = `${Math.min(Math.max(height, 150), maxHeight)}px`;
-      }
-    });
-    handle.addEventListener('pointerup', stopResize);
-    handle.addEventListener('pointercancel', stopResize);
-  }
-  function stopResize(event) {
-    if (!resizeState || event.pointerId !== resizeState.pointerId) return;
-    const handle = panel.querySelector(`[data-danmaku-resize="${resizeState.direction}"]`);
-    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
-    resizeState = null;
-  }
+  field.addEventListener('change', renderDanmakuEditor);
 }
+renderDanmakuWindowList();
 
 function toggleCleanMode() {
   document.body.classList.toggle('clean');

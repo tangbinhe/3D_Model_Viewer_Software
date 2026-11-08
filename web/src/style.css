@@ -12,7 +12,7 @@
 
 * { box-sizing: border-box; }
 body { margin: 0; overflow: hidden; }
-button, select, input { font: inherit; }
+button, select, input, textarea { font: inherit; }
 button { color: inherit; cursor: pointer; }
 button:disabled { opacity: .38; cursor: not-allowed; }
 #app { height: 100vh; display: flex; flex-direction: column; }
@@ -110,6 +110,17 @@ select { min-width: 0; flex: 1; color: #edf2ff; background: #0c111a; border: 1px
 .danmaku-window-select { flex: 1; text-align: left; }
 .danmaku-window-select.active { border-color: #7c6cff88; color: #d8d2ff; background: #7c6cff18; }
 .danmaku-window-toggle { min-width: 48px; }
+.danmaku-window-select { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.danmaku-editor { margin-top: 12px; padding-top: 2px; border-top: 1px solid var(--line); }
+.danmaku-editor > input, .danmaku-editor textarea, .danmaku-geometry-grid input {
+  width: 100%; min-width: 0; padding: 8px 9px; border: 1px solid var(--line); border-radius: 8px;
+  outline: none; color: #edf2ff; background: #0c111a; font-size: 11px; resize: vertical;
+}
+.danmaku-editor > input:focus, .danmaku-editor textarea:focus, .danmaku-geometry-grid input:focus { border-color: #7c6cff88; }
+.danmaku-editor textarea { min-height: 66px; line-height: 1.55; }
+.danmaku-geometry-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+.danmaku-geometry-grid label { color: var(--muted); font-size: 10px; }
+.danmaku-geometry-grid input { display: block; margin-top: 5px; }
 .danmaku-panel {
   position: absolute; z-index: 3; top: 24px; left: 24px; width: min(340px,calc(100% - 48px));
   min-width: 200px; min-height: 150px; max-width: calc(100% - 16px); max-height: calc(100% - 16px);
@@ -118,17 +129,15 @@ select { min-width: 0; flex: 1; color: #edf2ff; background: #0c111a; border: 1px
   background: rgba(9,13,23,.9); box-shadow: 0 18px 50px rgba(0,0,0,.34); backdrop-filter: blur(18px);
   user-select: none;
 }
-.danmaku-drag-handle {
+.danmaku-header {
   flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
-  padding: 11px 12px; border-bottom: 1px solid var(--line); cursor: grab; touch-action: none;
+  padding: 11px 12px; border-bottom: 1px solid var(--line);
 }
-.danmaku-drag-handle:active { cursor: grabbing; }
-.danmaku-drag-handle > div { display: flex; align-items: center; gap: 7px; min-width: 0; }
-.danmaku-drag-handle strong { font-size: 12px; }
+.danmaku-header > div { display: flex; align-items: center; gap: 7px; min-width: 0; }
+.danmaku-header strong { font-size: 12px; overflow-wrap: anywhere; }
 .danmaku-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #a99fff; box-shadow: 0 0 9px #7c6cff88; }
 .danmaku-messages { flex: 1; min-height: 96px; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-.danmaku-empty { width: 100%; margin: auto; padding: 20px 8px; border-radius: 8px; outline: none; color: var(--muted); font-size: 11px; line-height: 1.55; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; cursor: text; }
-.danmaku-empty:focus { color: #d9e0ed; background: #7c6cff0b; box-shadow: 0 0 0 1px #7c6cff44; }
+.danmaku-empty { width: 100%; margin: auto; padding: 20px 8px; color: var(--muted); font-size: 11px; line-height: 1.55; text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; }
 .danmaku-panel.active { border-color: rgba(169,159,255,.62); }
 .danmaku-message { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; }
 .danmaku-badge { padding: 3px 8px; border-radius: 999px; color: white; background: #7c6cff; font-size: 9px; font-weight: 600; }
@@ -136,11 +145,6 @@ select { min-width: 0; flex: 1; color: #edf2ff; background: #0c111a; border: 1px
   margin: 0; padding: 9px 11px; border-radius: 4px 13px 13px 13px; color: #1b2030; background: #f5f2ff;
   font-size: 13px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text;
 }
-.danmaku-resize-handle { position: absolute; z-index: 2; touch-action: none; }
-.danmaku-resize-right { top: 0; right: 0; bottom: 12px; width: 8px; cursor: ew-resize; }
-.danmaku-resize-bottom { right: 12px; bottom: 0; left: 0; height: 8px; cursor: ns-resize; }
-.danmaku-resize-corner { right: 0; bottom: 0; width: 16px; height: 16px; cursor: nwse-resize; }
-.danmaku-resize-handle:hover { background: rgba(169,159,255,.18); }
 .view-grid { grid-template-columns: repeat(4,1fr); }
 .action-grid button.active { color: white; background: #7c6cff; border-color: #7c6cff; }
 .empty-state { position: absolute; z-index: 2; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 42%, #18213b 0, #0b1020 48%, #080c15 100%); }
