@@ -141,13 +141,8 @@ select { min-width: 0; flex: 1; color: #edf2ff; background: #0c111a; border: 1px
 .danmaku-resize-bottom { right: 12px; bottom: 0; left: 0; height: 8px; cursor: ns-resize; }
 .danmaku-resize-corner { right: 0; bottom: 0; width: 16px; height: 16px; cursor: nwse-resize; }
 .danmaku-resize-handle:hover { background: rgba(169,159,255,.18); }
-.view-toolbar {
-  position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px;
-  padding: 5px; background: rgba(9,13,21,.78); border: 1px solid rgba(255,255,255,.1); border-radius: 11px;
-  backdrop-filter: blur(16px); box-shadow: 0 8px 28px rgba(0,0,0,.24);
-}
-.view-toolbar button { min-width: 42px; padding: 7px 9px; background: transparent; border: 0; border-radius: 7px; color: #aeb8ca; font-size: 11px; }
-.view-toolbar button.active { color: white; background: #7c6cff; }
+.view-grid { grid-template-columns: repeat(4,1fr); }
+.action-grid button.active { color: white; background: #7c6cff; border-color: #7c6cff; }
 .empty-state { position: absolute; z-index: 2; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 42%, #18213b 0, #0b1020 48%, #080c15 100%); }
 .empty-state h1 { margin: 18px 0 8px; font-size: 24px; }.empty-state p { margin: 0 0 22px; color: var(--muted); font-size: 12px; }
 .empty-cube { display: grid; place-items: center; width: 74px; height: 74px; border: 1px solid #9f93ff66; border-radius: 20px; color: #b9b0ff; font-size: 23px; font-weight: 800; transform: rotate(-6deg); background: #7c6cff12; }
@@ -161,7 +156,7 @@ select { min-width: 0; flex: 1; color: #edf2ff; background: #0c111a; border: 1px
 #toast.visible { opacity: 1; transform: translate(-50%,0); }
 #toast.error { border-color: #ff6f7d66; color: #ffb4bc; }
 .clean-help { display: none; position: absolute; right: 18px; bottom: 16px; color: rgba(255,255,255,.35); font-size: 10px; }
-body.clean .app-header, body.clean #control-panel, body.clean .view-toolbar { display: none; }
+body.clean .app-header, body.clean #control-panel { display: none; }
 body.clean .workspace { display: block; }
 body.clean #viewport { position: fixed; inset: 0; }
 body.clean .clean-help { display: block; }

@@ -31,15 +31,6 @@
           </div>
           <div id="loading" class="loading hidden"><span></span><p>正在载入模型…</p></div>
           <div id="toast" role="status"></div>
-          <div class="view-toolbar">
-            <button data-view="front" class="active">正面</button>
-            <button data-view="right">右侧</button>
-            <button data-view="left">左侧</button>
-            <button data-view="back">背面</button>
-            <button data-view="top">顶部</button>
-            <button data-view="perspective">3D</button>
-            <button data-view="fit">适配</button>
-          </div>
           <template id="danmaku-template">
             <section class="danmaku-panel" aria-label="互动弹幕窗口">
               <header class="danmaku-drag-handle">
@@ -87,7 +78,20 @@
           </section>
 
           <section class="control-section">
-            <div class="section-heading"><span>03</span><h2>表情与动作</h2></div>
+            <div class="section-heading"><span>03</span><h2>视角</h2></div>
+            <div class="action-grid view-grid">
+              <button data-view="front" class="active">正面</button>
+              <button data-view="right">右侧</button>
+              <button data-view="left">左侧</button>
+              <button data-view="back">背面</button>
+              <button data-view="top">顶部</button>
+              <button data-view="perspective">3D</button>
+              <button data-view="fit">适配</button>
+            </div>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading"><span>04</span><h2>表情与动作</h2></div>
             <label class="field-label" for="expression-select">VRM 表情</label>
             <div class="inline-control">
               <select id="expression-select"><option value="">未载入 VRM 表情</option></select>
@@ -111,7 +115,7 @@
           </section>
 
           <section class="control-section">
-            <div class="section-heading"><span>04</span><h2>弹幕互动</h2></div>
+            <div class="section-heading"><span>05</span><h2>弹幕互动</h2></div>
             <div class="button-row">
               <button id="toggle-danmaku" class="button primary">添加弹幕窗口</button>
             </div>
