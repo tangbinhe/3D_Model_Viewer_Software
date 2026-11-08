@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Model Viewer</title>
-    <script type="module" crossorigin src="/assets/index-Cc_apHCO.js"></script>
+    <script type="module" crossorigin src="/assets/index-CYmhdcPs.js"></script>
     <link rel="stylesheet" crossorigin href="/assets/index-18CiaUOV.css">
   </head>
   <body>
@@ -26,10 +26,9 @@
           <div id="empty-state" class="empty-state">
             <div class="empty-cube">3D</div>
             <h1>载入你的角色</h1>
-            <p>选择 FBX、GLB 或 VRM 文件，也可以直接载入内置角色。</p>
+            <p>选择 FBX、GLB 或 VRM 文件。</p>
             <div class="empty-actions">
               <button id="empty-open" class="button primary">选择模型</button>
-              <button id="empty-example" class="button secondary">载入我的角色</button>
             </div>
           </div>
           <div id="loading" class="loading hidden"><span></span><p>正在载入模型…</p></div>
@@ -52,7 +51,6 @@
             <input id="model-input" type="file" accept=".fbx,.glb,.vrm" multiple hidden />
             <div class="button-row">
               <button id="open-model" class="button primary">打开模型</button>
-              <button id="load-example" class="button secondary">我的角色</button>
             </div>
             <div class="model-card">
               <span>当前模型</span>

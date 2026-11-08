@@ -199,7 +199,6 @@ function loadGLTF(arrayBuffer, extension) {
     loader.parse(arrayBuffer, '', (gltf) => {
       const vrm = gltf.userData.vrm;
       if (vrm) {
-        vrms.push(vrm);
         prepareObject(vrm.scene);
         resolve({ object: vrm.scene, animations: gltf.animations, vrm });
       } else {
@@ -223,6 +222,7 @@ async function parseModel(arrayBuffer, extension) {
 async function installModels(results, name, format) {
   clearModel();
   for (const result of results) {
+    if (result.vrm) vrms.push(result.vrm);
     content.add(result.object);
     if (result.animations?.length) {
       loadedClips.push(...result.animations);
@@ -260,22 +260,6 @@ async function loadFiles(files) {
   } catch (error) {
     console.error(error);
     showToast(error.message || '模型载入失败', true);
-  } finally {
-    setLoading(false);
-  }
-}
-
-async function loadExample() {
-  setLoading(true);
-  try {
-    const response = await fetch('/example/hetangbao.glb');
-    if (!response.ok) throw new Error('内置角色资源不存在，请手动选择模型');
-    const result = await loadGLTF(await response.arrayBuffer(), 'glb');
-    await installModels([result], '我的角色 · hetangbao', 'glb');
-    showToast('已载入内置角色');
-  } catch (error) {
-    console.error(error);
-    showToast(error.message || '内置角色载入失败', true);
   } finally {
     setLoading(false);
   }
@@ -456,8 +440,6 @@ $('#model-input').addEventListener('change', (event) => {
   loadFiles([...event.target.files]);
   event.target.value = '';
 });
-$('#load-example').addEventListener('click', loadExample);
-$('#empty-example').addEventListener('click', loadExample);
 $('#choose-background').addEventListener('click', () => $('#background-input').click());
 $('#background-input').addEventListener('change', (event) => {
   setBackgroundImage(event.target.files[0]);
@@ -523,4 +505,3 @@ setBackground('#0b1020', false);
 publishStatus();
 setInterval(pollCommands, 300);
 animate();
-loadExample();
