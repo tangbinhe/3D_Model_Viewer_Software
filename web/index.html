@@ -40,6 +40,19 @@
             <button data-view="perspective">3D</button>
             <button data-view="fit">适配</button>
           </div>
+          <section id="danmaku-panel" class="danmaku-panel hidden" aria-label="互动弹幕窗口">
+            <header id="danmaku-drag-handle" class="danmaku-drag-handle">
+              <div><span class="danmaku-live-dot"></span><strong>互动弹幕</strong><small>拖动移动</small></div>
+              <button id="danmaku-close" type="button" aria-label="隐藏弹幕窗口">×</button>
+            </header>
+            <div id="danmaku-messages" class="danmaku-messages" aria-live="polite">
+              <p id="danmaku-empty" class="danmaku-empty">还没有弹幕，输入一条试试。</p>
+            </div>
+            <form id="danmaku-form" class="danmaku-form">
+              <input id="danmaku-input" type="text" maxlength="200" placeholder="输入弹幕，回车发送" autocomplete="off" />
+              <button type="submit">发送</button>
+            </form>
+          </section>
           <div class="clean-help">按 H 显示控制界面</div>
         </section>
 
@@ -97,8 +110,16 @@
             <small id="rig-hint" class="hint">静态模型支持旋转；骨骼动作需要绑定后的 VRM。</small>
           </section>
 
+          <section class="control-section">
+            <div class="section-heading"><span>04</span><h2>弹幕互动</h2></div>
+            <div class="button-row">
+              <button id="toggle-danmaku" class="button primary">添加弹幕窗口</button>
+            </div>
+            <small class="hint">添加后拖动窗口标题栏即可移动；可在窗口内输入弹幕，也可通过本地 API 发送。</small>
+          </section>
+
           <details class="api-details">
-            <summary>本地 API 调用</summary>
+            <summary>本地 API 调用与参数文档</summary>
             <div class="api-base">
               <span>基础地址 · 仅本机访问</span>
               <code class="endpoint">http://127.0.0.1:8765</code>
@@ -131,7 +152,7 @@
 
             <details class="api-doc-section">
               <summary>2. POST /api/command 参数</summary>
-              <p>请求头使用 <code>Content-Type: application/json</code>。所有参数都可组合，但至少包含 expression、action、background、view、clean 之一。</p>
+              <p>请求头使用 <code>Content-Type: application/json</code>。所有参数都可组合，但至少包含 expression、action、background、view、clean、danmaku、danmakuVisible 之一。</p>
               <table class="api-table">
                 <thead><tr><th>参数</th><th>类型 / 默认</th><th>取值与作用</th></tr></thead>
                 <tbody>
@@ -142,9 +163,11 @@
                   <tr><td><code>background</code></td><td>字符串<br />缺省不修改</td><td>纯色背景，仅支持 <code>#RRGGBB</code>，例如 <code>#00FF00</code>。</td></tr>
                   <tr><td><code>view</code></td><td>字符串<br />缺省不修改</td><td>固定视角：front、right、left、back、top、perspective、fit。</td></tr>
                   <tr><td><code>clean</code></td><td>布尔值<br />缺省不修改</td><td><code>true</code> 隐藏控制界面，<code>false</code> 恢复界面。</td></tr>
+                  <tr><td><code>danmaku</code></td><td>字符串<br />缺省不新增</td><td>发送 1–200 个字符的弹幕并显示窗口；自动去除首尾空白。</td></tr>
+                  <tr><td><code>danmakuVisible</code></td><td>布尔值<br />缺省不修改</td><td><code>true</code> 添加弹幕窗口，<code>false</code> 隐藏窗口但保留消息。</td></tr>
                 </tbody>
               </table>
-              <p class="api-note">同一次调用的执行顺序：背景 → 视角 → 界面显示 → 表情 → 动作。weight 和 duration 不能作为唯一参数；未知字段或格式错误返回 HTTP 400。</p>
+              <p class="api-note">同一次调用的执行顺序：背景 → 视角 → 控制界面 → 弹幕内容 → 弹幕窗口 → 表情 → 动作。weight 和 duration 不能作为唯一参数；未知字段或格式错误返回 HTTP 400。</p>
             </details>
 
             <details class="api-doc-section">
@@ -234,12 +257,27 @@
                 <code>motions</code><span>动作库 ID、名称、分组和 kind</span>
                 <code>action / actionName</code><span>当前动作 ID 和名称，无动作为 null</span>
                 <code>background / view / clean</code><span>当前背景、视角和界面隐藏状态</span>
+                <code>danmakuVisible</code><span>弹幕窗口当前是否显示</span>
+                <code>danmakuMessages</code><span>最近 50 条弹幕内容及发送时间</span>
                 <code>lastCommand</code><span>最近一条指令的实际执行结果</span>
               </div>
             </details>
 
             <details class="api-doc-section">
-              <summary>8. 使用限制</summary>
+              <summary>8. 弹幕互动 API</summary>
+              <p>右侧“弹幕互动”区域可添加或隐藏浮窗，拖动浮窗标题栏可调整位置。API 发送弹幕不会重置已拖动的位置。</p>
+              <p>发送文字并显示窗口：</p>
+              <pre>curl -X POST http://127.0.0.1:8765/api/command \
+  -H 'Content-Type: application/json' \
+  -d '{"danmaku":"大家好，欢迎来到直播间！","danmakuVisible":true}'</pre>
+              <p>danmaku 可单独使用，会自动显示窗口；同一次调用同时设置 danmakuVisible 为 false 时，消息仍保留但窗口隐藏。隐藏不会清空历史，最多保留最近 50 条。</p>
+              <pre>curl -X POST http://127.0.0.1:8765/api/command \
+  -H 'Content-Type: application/json' \
+  -d '{"danmakuVisible":false}'</pre>
+            </details>
+
+            <details class="api-doc-section">
+              <summary>9. 使用限制</summary>
               <ul>
                 <li>启动后保持空白，必须先在界面手动打开 FBX、GLB 或 VRM 模型。</li>
                 <li>API 不能通过文件路径打开模型，也不能上传模型。</li>

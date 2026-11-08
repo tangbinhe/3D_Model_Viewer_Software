@@ -165,10 +165,10 @@ final class LocalHTTPServer: ObservableObject, @unchecked Sendable {
     }
 
     private func validate(_ command: [String: Any]) -> String? {
-        let allowedKeys: Set<String> = ["expression", "action", "duration", "weight", "background", "view", "clean"]
+        let allowedKeys: Set<String> = ["expression", "action", "duration", "weight", "background", "view", "clean", "danmaku", "danmakuVisible"]
         guard command.keys.allSatisfy({ allowedKeys.contains($0) }) else { return "Unknown command field" }
-        guard command.keys.contains(where: { ["expression", "action", "background", "view", "clean"].contains($0) }) else {
-            return "Command must include expression, action, background, view, or clean"
+        guard command.keys.contains(where: { ["expression", "action", "background", "view", "clean", "danmaku", "danmakuVisible"].contains($0) }) else {
+            return "Command must include expression, action, background, view, clean, danmaku, or danmakuVisible"
         }
         if let expression = command["expression"] {
             guard let value = expression as? String, value.count <= 64 else { return "Invalid expression" }
@@ -199,6 +199,14 @@ final class LocalHTTPServer: ObservableObject, @unchecked Sendable {
                 return "Weight must be between 0 and 1"
             }
         }
+        if let danmaku = command["danmaku"] {
+            guard let value = danmaku as? String,
+                  !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  value.count <= 200 else {
+                return "Danmaku must contain 1 to 200 characters"
+            }
+        }
+        if let danmakuVisible = command["danmakuVisible"], !(danmakuVisible is Bool) { return "DanmakuVisible must be a boolean" }
         if let clean = command["clean"], !(clean is Bool) { return "Clean must be a boolean" }
         return nil
     }
