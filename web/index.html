@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>3D Model Viewer</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand-mark">3D</span>
+          <div><strong>Model Viewer</strong><span>本地播放 · 直播采集 · API 控制</span></div>
+        </div>
+        <div class="header-actions">
+          <span class="connection"><i></i><span id="api-status">API 正在启动</span></span>
+          <button id="clean-mode" class="button secondary">隐藏界面 <kbd>H</kbd></button>
+          <button id="fullscreen" class="button primary">全屏播放</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section id="viewport" aria-label="3D 模型预览">
+          <div id="empty-state" class="empty-state">
+            <div class="empty-cube">3D</div>
+            <h1>载入你的角色</h1>
+            <p>选择 FBX、GLB 或 VRM 文件，也可以直接载入内置角色。</p>
+            <div class="empty-actions">
+              <button id="empty-open" class="button primary">选择模型</button>
+              <button id="empty-example" class="button secondary">载入我的角色</button>
+            </div>
+          </div>
+          <div id="loading" class="loading hidden"><span></span><p>正在载入模型…</p></div>
+          <div id="toast" role="status"></div>
+          <div class="view-toolbar">
+            <button data-view="front" class="active">正面</button>
+            <button data-view="right">右侧</button>
+            <button data-view="left">左侧</button>
+            <button data-view="back">背面</button>
+            <button data-view="top">顶部</button>
+            <button data-view="perspective">3D</button>
+            <button data-view="fit">适配</button>
+          </div>
+          <div class="clean-help">按 H 显示控制界面</div>
+        </section>
+
+        <aside id="control-panel">
+          <section class="control-section">
+            <div class="section-heading"><span>01</span><h2>模型</h2></div>
+            <input id="model-input" type="file" accept=".fbx,.glb,.vrm" multiple hidden />
+            <div class="button-row">
+              <button id="open-model" class="button primary">打开模型</button>
+              <button id="load-example" class="button secondary">我的角色</button>
+            </div>
+            <div class="model-card">
+              <span>当前模型</span>
+              <strong id="model-name">尚未载入</strong>
+              <small id="model-detail">支持多个 FBX 部件同时载入</small>
+            </div>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading"><span>02</span><h2>背景</h2></div>
+            <div class="swatches">
+              <button data-color="#0b1020" class="swatch dark active" title="深色背景"></button>
+              <button data-color="#00ff00" class="swatch green" title="绿幕"></button>
+              <button data-color="#ffffff" class="swatch white" title="白色背景"></button>
+              <label class="custom-color" title="自定义颜色"><input id="background-color" type="color" value="#0b1020" /><span>自定义</span></label>
+            </div>
+            <input id="background-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+            <div class="button-row">
+              <button id="choose-background" class="button secondary">选择背景图</button>
+              <button id="clear-background" class="button ghost">清除图片</button>
+            </div>
+            <small class="hint">背景图自动按窗口等比例覆盖；绿幕可用于直播抠像。</small>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading"><span>03</span><h2>表情与动作</h2></div>
+            <label class="field-label" for="expression-select">VRM 表情</label>
+            <div class="inline-control">
+              <select id="expression-select"><option value="">未载入 VRM 表情</option></select>
+              <button id="reset-expression" class="button ghost">重置</button>
+            </div>
+            <label class="field-label">动作</label>
+            <div class="action-grid">
+              <button data-action="idle">待机</button>
+              <button data-action="nod">点头</button>
+              <button data-action="wave">挥手</button>
+              <button data-action="bow">鞠躬</button>
+              <button data-action="spin">旋转</button>
+              <button data-action="stop">停止</button>
+            </div>
+            <small id="rig-hint" class="hint">静态模型支持旋转；骨骼动作需要绑定后的 VRM。</small>
+          </section>
+
+          <details class="api-details">
+            <summary>本地 API 调用</summary>
+            <code class="endpoint">POST http://127.0.0.1:8765/api/command</code>
+            <pre>{
+  "expression": "happy",
+  "action": "wave",
+  "duration": 2,
+  "background": "#00ff00",
+  "view": "front"
+}</pre>
+            <small class="hint">仅监听本机回环地址。GET /api/status 可查询当前状态。</small>
+          </details>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
