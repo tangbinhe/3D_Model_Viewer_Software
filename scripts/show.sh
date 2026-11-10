@@ -1,5 +1,6 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "/Users/hetangbin/AI-Avatar" || exit 1
 
 STOPPED=0
@@ -34,7 +35,7 @@ if ! curl -sf -m 2 http://127.0.0.1:8000/health > /dev/null 2>&1; then
     echo "大模型服务已就绪。"
 fi
 
-.venv/bin/python -u live_show.py "${1-}" <&0 &
+.venv/bin/python -u "$SCRIPT_DIR/action_live_show.py" "${1-}" <&0 &
 child_pid=$!
 wait "$child_pid"
 status=$?
