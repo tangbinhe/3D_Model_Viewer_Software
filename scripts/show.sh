@@ -34,11 +34,7 @@ if ! curl -sf -m 2 http://127.0.0.1:8000/health > /dev/null 2>&1; then
     echo "大模型服务已就绪。"
 fi
 
-if [ "$#" -gt 0 ]; then
-    .venv/bin/python -u live_show.py "$1" <&0 &
-else
-    .venv/bin/python -u live_show.py <&0 &
-fi
+.venv/bin/python -u live_show.py "${1-}" <&0 &
 child_pid=$!
 wait "$child_pid"
 status=$?

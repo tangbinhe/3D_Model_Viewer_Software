@@ -126,6 +126,11 @@ final class ActionRunner: ObservableObject {
         process.terminate()
     }
 
+    func clearLog() {
+        log = ""
+        status = Status(state: status.state, message: status.message, log: "")
+    }
+
     private func readOutput(_ pipe: Pipe) {
         pipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
             let data = handle.availableData
@@ -219,6 +224,8 @@ struct WebView: NSViewRepresentable {
                 actionRunner.stop()
             case "danmaku":
                 actionRunner.sendDanmaku(body["text"] as? String ?? "")
+            case "clearLog":
+                actionRunner.clearLog()
             case "status":
                 actionRunner.publishStatus()
             default:

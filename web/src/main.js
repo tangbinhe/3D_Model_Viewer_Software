@@ -844,6 +844,9 @@ $('#start-action').addEventListener('click', () => {
 $('#stop-action').addEventListener('click', () => {
   window.webkit?.messageHandlers?.action?.postMessage({ action: 'stop' });
 });
+$('#clear-action-log').addEventListener('click', () => {
+  window.webkit?.messageHandlers?.action?.postMessage({ action: 'clearLog' });
+});
 function sendActionDanmaku() {
   const text = actionDanmakuField.value.trim();
   if (!text) {

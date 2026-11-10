@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Model Viewer</title>
-    <script type="module" crossorigin src="/assets/index-B2M6vQiX.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Cam8DZFT.css">
+    <script type="module" crossorigin src="/assets/index-C9kkBwpb.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DWKExorU.css">
   </head>
   <body>
     <div id="app">
@@ -147,7 +147,10 @@
               <button id="send-action-danmaku" class="button secondary" disabled>发送</button>
             </div>
             <div id="action-status" class="action-status" role="status">尚未启动</div>
-            <label class="field-label">脚本输出</label>
+            <div class="action-log-heading">
+              <label class="field-label">脚本输出</label>
+              <button id="clear-action-log" class="button ghost" type="button">清屏</button>
+            </div>
             <pre id="action-log" class="action-log" role="log" aria-label="Action 脚本输出">暂无脚本输出</pre>
             <small class="hint">live_id 保存在本机，留空为排练模式；运行时可直接发送老板弹幕。日志保留最近 12,000 字符。</small>
           </section>
