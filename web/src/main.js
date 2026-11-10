@@ -107,8 +107,6 @@ function renderDanmakuEditor() {
   const values = {
     '#danmaku-title': item.title,
     '#danmaku-empty-text': item.emptyText,
-    '#danmaku-x': Math.round(parseFloat(panel.style.left) || panel.offsetLeft),
-    '#danmaku-y': Math.round(parseFloat(panel.style.top) || panel.offsetTop),
     '#danmaku-width': Math.round(panel.offsetWidth || parseFloat(panel.style.width)),
     '#danmaku-height': Math.round(panel.offsetHeight || parseFloat(panel.style.height)),
   };
@@ -160,6 +158,37 @@ function setActiveDanmakuWindow(id, notify = true) {
   return item;
 }
 
+function bindDanmakuWindowDrag(item) {
+  const panel = item.element;
+  const handle = panel.querySelector('.danmaku-header');
+  let drag = null;
+  handle.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    const rect = panel.getBoundingClientRect();
+    drag = { pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top };
+    setActiveDanmakuWindow(item.id, false);
+    handle.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  handle.addEventListener('pointermove', (event) => {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    const viewportRect = viewport.getBoundingClientRect();
+    panel.style.left = `${event.clientX - viewportRect.left - drag.offsetX}px`;
+    panel.style.top = `${event.clientY - viewportRect.top - drag.offsetY}px`;
+    clampDanmakuPanel(panel);
+    renderDanmakuEditor();
+  });
+  function stopDrag(event) {
+    if (!drag || event.pointerId !== drag.pointerId) return;
+    if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+    drag = null;
+    renderDanmakuEditor();
+    publishStatus();
+  }
+  handle.addEventListener('pointerup', stopDrag);
+  handle.addEventListener('pointercancel', stopDrag);
+}
+
 function createDanmakuWindow() {
   const id = nextDanmakuId++;
   const element = $('#danmaku-template').content.firstElementChild.cloneNode(true);
@@ -178,6 +207,7 @@ function createDanmakuWindow() {
   };
   danmakuWindows.push(item);
   viewport.append(element);
+  bindDanmakuWindowDrag(item);
   element.style.width = `${element.offsetWidth}px`;
   element.style.height = `${element.offsetHeight}px`;
   clampDanmakuPanel(element);
@@ -759,8 +789,6 @@ $('#danmaku-empty-text').addEventListener('input', (event) => {
   publishStatus();
 });
 for (const [selector, property] of [
-  ['#danmaku-x', 'left'],
-  ['#danmaku-y', 'top'],
   ['#danmaku-width', 'width'],
   ['#danmaku-height', 'height'],
 ]) {
@@ -778,6 +806,62 @@ for (const [selector, property] of [
   field.addEventListener('change', renderDanmakuEditor);
 }
 renderDanmakuWindowList();
+
+const actionLiveIdField = $('#action-live-id');
+const actionDanmakuField = $('#action-danmaku');
+actionLiveIdField.value = localStorage.getItem('actionLiveId') || '';
+function updateActionStatus(status) {
+  const statusElement = $('#action-status');
+  const busy = ['starting', 'running', 'stopping'].includes(status.state);
+  const running = status.state === 'running';
+  statusElement.textContent = status.message;
+  statusElement.classList.toggle('running', ['starting', 'running'].includes(status.state));
+  statusElement.classList.toggle('error', status.state === 'error');
+  $('#start-action').disabled = busy;
+  $('#stop-action').disabled = !['starting', 'running'].includes(status.state);
+  actionLiveIdField.disabled = busy;
+  actionDanmakuField.disabled = !running;
+  $('#send-action-danmaku').disabled = !running;
+  const log = $('#action-log');
+  log.textContent = status.log || '暂无脚本输出';
+  log.scrollTop = log.scrollHeight;
+}
+window.updateActionStatus = updateActionStatus;
+$('#start-action').addEventListener('click', () => {
+  const liveId = actionLiveIdField.value.trim();
+  if (liveId && !/^[0-9]{1,32}$/.test(liveId)) {
+    showToast('live_id 留空或输入 1–32 位数字', true);
+    actionLiveIdField.focus();
+    return;
+  }
+  if (!window.webkit?.messageHandlers?.action) {
+    showToast('Action 控制仅可在桌面应用中使用', true);
+    return;
+  }
+  localStorage.setItem('actionLiveId', liveId);
+  window.webkit.messageHandlers.action.postMessage({ action: 'start', liveId });
+});
+$('#stop-action').addEventListener('click', () => {
+  window.webkit?.messageHandlers?.action?.postMessage({ action: 'stop' });
+});
+function sendActionDanmaku() {
+  const text = actionDanmakuField.value.trim();
+  if (!text) {
+    showToast('请输入老板弹幕', true);
+    actionDanmakuField.focus();
+    return;
+  }
+  window.webkit?.messageHandlers?.action?.postMessage({ action: 'danmaku', text });
+  actionDanmakuField.value = '';
+  actionDanmakuField.focus();
+}
+$('#send-action-danmaku').addEventListener('click', sendActionDanmaku);
+actionDanmakuField.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter') return;
+  event.preventDefault();
+  sendActionDanmaku();
+});
+actionLiveIdField.addEventListener('change', () => localStorage.setItem('actionLiveId', actionLiveIdField.value.trim()));
 
 function toggleCleanMode() {
   document.body.classList.toggle('clean');
@@ -819,5 +903,6 @@ function animate() {
 
 setBackground('#0b1020', false);
 publishStatus();
+window.webkit?.messageHandlers?.action?.postMessage({ action: 'status' });
 setInterval(pollCommands, 300);
 animate();

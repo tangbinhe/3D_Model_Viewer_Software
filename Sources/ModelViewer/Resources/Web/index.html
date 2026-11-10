@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Model Viewer</title>
-    <script type="module" crossorigin src="/assets/index-BVroAlR7.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-CZtRFmEi.css">
+    <script type="module" crossorigin src="/assets/index-B2M6vQiX.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Cam8DZFT.css">
   </head>
   <body>
     <div id="app">
@@ -125,14 +125,31 @@
               <label class="field-label" for="danmaku-empty-text">无弹幕提示词</label>
               <textarea id="danmaku-empty-text" rows="3" maxlength="200"></textarea>
               <div class="danmaku-geometry-grid">
-                <label>X<input id="danmaku-x" type="number" min="8" step="1" /></label>
-                <label>Y<input id="danmaku-y" type="number" min="8" step="1" /></label>
                 <label>宽度<input id="danmaku-width" type="number" min="200" step="1" /></label>
                 <label>高度<input id="danmaku-height" type="number" min="150" step="1" /></label>
               </div>
-              <small class="hint">位置和尺寸单位为像素，浮窗始终限制在 3D 视口内。</small>
+              <small class="hint">尺寸单位为像素，浮窗始终限制在 3D 视口内。</small>
             </div>
-            <small class="hint">选择窗口后可编辑标题、提示词、位置和宽高；浮窗仅展示 API 弹幕，各窗口互不影响。</small>
+            <small class="hint">可拖动浮窗标题栏调整位置，或在右侧编辑标题、提示词和宽高；浮窗仅展示 API 弹幕，各窗口互不影响。</small>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading"><span>06</span><h2>Action 前台</h2></div>
+            <label class="field-label" for="action-live-id">live_id（选填）</label>
+            <input id="action-live-id" class="action-live-id" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="32" autocomplete="off" placeholder="留空为排练模式" />
+            <div class="button-row action-buttons">
+              <button id="start-action" class="button primary">启动 Action</button>
+              <button id="stop-action" class="button ghost" disabled>停止</button>
+            </div>
+            <label class="field-label" for="action-danmaku">老板弹幕</label>
+            <div class="action-danmaku-row">
+              <input id="action-danmaku" class="action-live-id" type="text" autocomplete="off" placeholder="运行后输入弹幕" disabled />
+              <button id="send-action-danmaku" class="button secondary" disabled>发送</button>
+            </div>
+            <div id="action-status" class="action-status" role="status">尚未启动</div>
+            <label class="field-label">脚本输出</label>
+            <pre id="action-log" class="action-log" role="log" aria-label="Action 脚本输出">暂无脚本输出</pre>
+            <small class="hint">live_id 保存在本机，留空为排练模式；运行时可直接发送老板弹幕。日志保留最近 12,000 字符。</small>
           </section>
 
           <details class="api-details">
@@ -284,7 +301,7 @@
 
             <details class="api-doc-section">
               <summary>8. 弹幕互动 API</summary>
-              <p>可添加多个独立浮窗，右侧列表分别选择、显示或隐藏。选择窗口后，在右侧编辑标题、无弹幕提示词、位置和宽高；浮窗仅展示 API 弹幕，不提供手动发送。各窗口的标题、消息、提示、位置和大小互不影响。</p>
+              <p>可添加多个独立浮窗，右侧列表分别选择、显示或隐藏。选择窗口后，在右侧编辑标题、无弹幕提示词、位置和宽高，也可拖动标题栏调整位置；浮窗仅展示 API 弹幕，不提供手动发送。各窗口的标题、消息、提示、位置和大小互不影响。</p>
               <p>向当前窗口展示文字；没有窗口时自动创建：</p>
               <pre>curl -X POST http://127.0.0.1:8765/api/command \
   -H 'Content-Type: application/json' \

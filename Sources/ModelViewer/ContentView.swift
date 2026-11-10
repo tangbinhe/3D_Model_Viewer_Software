@@ -2,11 +2,12 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var server: LocalHTTPServer
+    @EnvironmentObject private var actionRunner: ActionRunner
 
     var body: some View {
         Group {
             if let url = server.baseURL {
-                WebView(url: url)
+                WebView(url: url, actionRunner: actionRunner)
             } else {
                 VStack(spacing: 14) {
                     ProgressView()

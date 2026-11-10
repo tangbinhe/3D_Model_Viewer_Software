@@ -11,6 +11,8 @@
 		A10000000000000000000003 /* WebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000004; };
 		A10000000000000000000004 /* LocalHTTPServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000005; };
 		A10000000000000000000005 /* Web in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000006; };
+		A10000000000000000000006 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000008; };
+		A10000000000000000000007 /* scripts in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +23,8 @@
 		B10000000000000000000005 /* LocalHTTPServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalHTTPServer.swift; sourceTree = "<group>"; };
 		B10000000000000000000006 /* Web */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Web; sourceTree = "<group>"; };
 		B10000000000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B10000000000000000000008 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		B10000000000000000000009 /* scripts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = scripts; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,10 +32,10 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D10000000000000000000001 = {isa = PBXGroup; children = (D10000000000000000000002, D10000000000000000000006, ); sourceTree = "<group>"; };
+		D10000000000000000000001 = {isa = PBXGroup; children = (D10000000000000000000002, B10000000000000000000009, D10000000000000000000006, ); sourceTree = "<group>"; };
 		D10000000000000000000002 /* Sources */ = {isa = PBXGroup; children = (D10000000000000000000003, ); path = Sources; sourceTree = "<group>"; };
 		D10000000000000000000003 /* ModelViewer */ = {isa = PBXGroup; children = (B10000000000000000000002, B10000000000000000000003, B10000000000000000000004, B10000000000000000000005, B10000000000000000000007, D10000000000000000000004, ); path = ModelViewer; sourceTree = "<group>"; };
-		D10000000000000000000004 /* Resources */ = {isa = PBXGroup; children = (B10000000000000000000006, ); path = Resources; sourceTree = "<group>"; };
+		D10000000000000000000004 /* Resources */ = {isa = PBXGroup; children = (B10000000000000000000006, B10000000000000000000008, ); path = Resources; sourceTree = "<group>"; };
 		D10000000000000000000006 /* Products */ = {isa = PBXGroup; children = (B10000000000000000000001, ); name = Products; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
@@ -67,7 +71,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		C10000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005, ); runOnlyForDeploymentPostprocessing = 0; };
+		C10000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000005, A10000000000000000000006, A10000000000000000000007, ); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
