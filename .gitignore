@@ -1,5 +1,6 @@
 .DS_Store
 .build/
+.build-release/
 node_modules/
 web/dist/
 *.xcuserstate
