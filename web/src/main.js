@@ -273,6 +273,218 @@ function resize() {
 new ResizeObserver(resize).observe(viewport);
 resize();
 
+const workspace = $('.workspace');
+const sidebarResizeHandle = $('#sidebar-resize-handle');
+const sidebarMinWidth = 260;
+const sidebarMaxWidth = 640;
+const moduleMinHeight = 48;
+const moduleMaxHeight = 1200;
+const layoutStorageKey = 'controlPanelLayout.v1';
+let storedLayout = {};
+try {
+  storedLayout = JSON.parse(localStorage.getItem(layoutStorageKey)) || {};
+} catch {
+  storedLayout = {};
+}
+const moduleHeights = storedLayout.sections && typeof storedLayout.sections === 'object'
+  ? { ...storedLayout.sections }
+  : {};
+const moduleCollapsed = storedLayout.collapsed && typeof storedLayout.collapsed === 'object'
+  ? { ...storedLayout.collapsed }
+  : {};
+
+function clampLayoutValue(value, min, max, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.min(Math.max(number, min), max) : fallback;
+}
+
+function defaultSidebarWidth() {
+  return window.innerWidth <= 900 ? 280 : 324;
+}
+
+let sidebarWidth = clampLayoutValue(storedLayout.sidebarWidth, sidebarMinWidth, sidebarMaxWidth, defaultSidebarWidth());
+let sidebarDrag = null;
+let sidebarRequestPending = false;
+let queuedSidebarWidth = null;
+
+function savePanelLayout() {
+  try {
+    localStorage.setItem(layoutStorageKey, JSON.stringify({ sidebarWidth, sections: moduleHeights, collapsed: moduleCollapsed }));
+  } catch {}
+}
+
+function setSidebarWidth(width, persist = true) {
+  sidebarWidth = clampLayoutValue(width, sidebarMinWidth, sidebarMaxWidth, defaultSidebarWidth());
+  workspace.style.setProperty('--sidebar-width', `${sidebarWidth}px`);
+  sidebarResizeHandle.setAttribute('aria-valuemin', String(sidebarMinWidth));
+  sidebarResizeHandle.setAttribute('aria-valuemax', String(sidebarMaxWidth));
+  sidebarResizeHandle.setAttribute('aria-valuenow', String(Math.round(sidebarWidth)));
+  if (persist) savePanelLayout();
+}
+
+function requestSidebarWidth(width) {
+  const requested = clampLayoutValue(width, sidebarMinWidth, sidebarMaxWidth, sidebarWidth);
+  const handler = window.webkit?.messageHandlers?.layout;
+  if (!handler) {
+    setSidebarWidth(requested);
+    return;
+  }
+  if (sidebarRequestPending) {
+    queuedSidebarWidth = requested;
+    return;
+  }
+  sidebarRequestPending = true;
+  handler.postMessage({ action: 'resizeSidebar', width: requested, baseWidth: sidebarWidth });
+}
+
+window.applySidebarWidth = (width) => {
+  sidebarRequestPending = false;
+  setSidebarWidth(width);
+  const queued = queuedSidebarWidth;
+  queuedSidebarWidth = null;
+  if (queued !== null && Math.abs(queued - sidebarWidth) >= 0.5) requestSidebarWidth(queued);
+};
+
+setSidebarWidth(sidebarWidth, false);
+sidebarResizeHandle.addEventListener('pointerdown', (event) => {
+  if (event.button !== 0) return;
+  sidebarDrag = {
+    pointerId: event.pointerId,
+    startScreenX: event.screenX,
+    startWidth: sidebarWidth,
+  };
+  sidebarResizeHandle.setPointerCapture(event.pointerId);
+  document.body.classList.add('sidebar-resizing');
+  event.preventDefault();
+});
+sidebarResizeHandle.addEventListener('pointermove', (event) => {
+  if (!sidebarDrag || event.pointerId !== sidebarDrag.pointerId) return;
+  requestSidebarWidth(sidebarDrag.startWidth + sidebarDrag.startScreenX - event.screenX);
+});
+function stopSidebarDrag(event) {
+  if (!sidebarDrag || event.pointerId !== sidebarDrag.pointerId) return;
+  if (sidebarResizeHandle.hasPointerCapture(event.pointerId)) sidebarResizeHandle.releasePointerCapture(event.pointerId);
+  sidebarDrag = null;
+  document.body.classList.remove('sidebar-resizing');
+  savePanelLayout();
+}
+sidebarResizeHandle.addEventListener('pointerup', stopSidebarDrag);
+sidebarResizeHandle.addEventListener('pointercancel', stopSidebarDrag);
+sidebarResizeHandle.addEventListener('dblclick', () => requestSidebarWidth(defaultSidebarWidth()));
+sidebarResizeHandle.addEventListener('keydown', (event) => {
+  if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  event.preventDefault();
+  requestSidebarWidth(sidebarWidth + (event.key === 'ArrowLeft' ? 16 : -16));
+});
+
+function setModuleHeight(module, body, key, height) {
+  const value = Math.round(clampLayoutValue(height, moduleMinHeight, moduleMaxHeight, body.offsetHeight));
+  moduleHeights[key] = value;
+  module.classList.add('is-resized');
+  body.style.height = `${value}px`;
+  const handle = module.querySelector(':scope > .module-resize-handle');
+  handle?.setAttribute('aria-valuenow', String(value));
+}
+
+function setupResizableModules() {
+  const modules = document.querySelectorAll('#control-panel > .control-section, #control-panel > .api-details');
+  modules.forEach((module, index) => {
+    const key = module.dataset.layoutKey || `module-${index + 1}`;
+    const header = module.querySelector(':scope > .section-heading, :scope > summary');
+    const body = document.createElement('div');
+    body.className = 'control-section-body';
+    for (const child of [...module.childNodes]) {
+      if (child !== header) body.append(child);
+    }
+    module.classList.add('resizable-module');
+    module.append(body);
+
+    const handle = document.createElement('button');
+    handle.type = 'button';
+    handle.className = 'module-resize-handle';
+    handle.setAttribute('role', 'separator');
+    handle.setAttribute('aria-orientation', 'horizontal');
+    handle.setAttribute('aria-label', `调整${header?.textContent.trim() || '模块'}高度`);
+    handle.setAttribute('aria-valuemin', String(moduleMinHeight));
+    handle.setAttribute('aria-valuemax', String(moduleMaxHeight));
+    handle.title = '拖动调整模块高度，双击恢复自动高度';
+    module.append(handle);
+
+    if (module.matches('.control-section')) {
+      const title = header?.querySelector('h2')?.textContent.trim() || '模块';
+      const toggle = document.createElement('button');
+      toggle.type = 'button';
+      toggle.className = 'module-toggle';
+      body.id = `module-body-${key}`;
+      toggle.setAttribute('aria-controls', body.id);
+      header?.append(toggle);
+      const setCollapsed = (collapsed) => {
+        moduleCollapsed[key] = collapsed;
+        module.classList.toggle('is-collapsed', collapsed);
+        body.hidden = collapsed;
+        handle.hidden = collapsed;
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', `${collapsed ? '展开' : '收起'}${title}`);
+        toggle.title = `${collapsed ? '展开' : '收起'}${title}`;
+      };
+      setCollapsed(Boolean(moduleCollapsed[key]));
+      toggle.addEventListener('click', () => {
+        setCollapsed(!module.classList.contains('is-collapsed'));
+        savePanelLayout();
+      });
+    } else if (module.matches('details')) {
+      if (Object.prototype.hasOwnProperty.call(moduleCollapsed, key)) module.open = !moduleCollapsed[key];
+      module.addEventListener('toggle', () => {
+        moduleCollapsed[key] = !module.open;
+        savePanelLayout();
+      });
+    }
+
+    if (Object.prototype.hasOwnProperty.call(moduleHeights, key)) {
+      setModuleHeight(module, body, key, moduleHeights[key]);
+    }
+
+    let drag = null;
+    handle.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      const height = body.getBoundingClientRect().height;
+      if (!height) return;
+      drag = { pointerId: event.pointerId, startClientY: event.clientY, startHeight: height };
+      handle.setPointerCapture(event.pointerId);
+      document.body.classList.add('module-resizing');
+      event.preventDefault();
+    });
+    handle.addEventListener('pointermove', (event) => {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      setModuleHeight(module, body, key, drag.startHeight + event.clientY - drag.startClientY);
+    });
+    function stopDrag(event) {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      if (handle.hasPointerCapture(event.pointerId)) handle.releasePointerCapture(event.pointerId);
+      drag = null;
+      document.body.classList.remove('module-resizing');
+      savePanelLayout();
+    }
+    handle.addEventListener('pointerup', stopDrag);
+    handle.addEventListener('pointercancel', stopDrag);
+    handle.addEventListener('dblclick', () => {
+      module.classList.remove('is-resized');
+      body.style.removeProperty('height');
+      handle.removeAttribute('aria-valuenow');
+      delete moduleHeights[key];
+      savePanelLayout();
+    });
+    handle.addEventListener('keydown', (event) => {
+      if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+      event.preventDefault();
+      const height = body.getBoundingClientRect().height;
+      setModuleHeight(module, body, key, height + (event.key === 'ArrowDown' ? 16 : -16));
+      savePanelLayout();
+    });
+  });
+}
+setupResizableModules();
+
 function setBackground(color, notify = true) {
   if (!/^#[0-9a-fA-F]{6}$/.test(color)) {
     if (notify) showToast('背景颜色必须使用 #RRGGBB 格式', true);

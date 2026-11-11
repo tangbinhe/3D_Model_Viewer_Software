@@ -163,6 +163,7 @@ struct WebView: NSViewRepresentable {
         configuration.defaultWebpagePreferences.allowsContentJavaScript = true
         configuration.userContentController.add(coordinator, name: "fullscreen")
         configuration.userContentController.add(coordinator, name: "action")
+        configuration.userContentController.add(coordinator, name: "layout")
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = coordinator
         webView.uiDelegate = coordinator
@@ -214,6 +215,17 @@ struct WebView: NSViewRepresentable {
                 webView?.window?.toggleFullScreen(nil)
                 return
             }
+            if message.name == "layout" {
+                guard let body = message.body as? [String: Any],
+                      body["action"] as? String == "resizeSidebar",
+                      let requestedWidth = body["width"] as? NSNumber,
+                      let baseWidth = body["baseWidth"] as? NSNumber else { return }
+                resizeSidebar(
+                    requestedWidth: CGFloat(requestedWidth.doubleValue),
+                    baseWidth: CGFloat(baseWidth.doubleValue)
+                )
+                return
+            }
             guard message.name == "action",
                   let body = message.body as? [String: Any],
                   let action = body["action"] as? String else { return }
@@ -231,6 +243,37 @@ struct WebView: NSViewRepresentable {
             default:
                 break
             }
+        }
+
+        private func resizeSidebar(requestedWidth: CGFloat, baseWidth: CGFloat) {
+            let requested = min(max(requestedWidth, 260), 640)
+            let base = min(max(baseWidth, 260), 640)
+            func finish(_ width: CGFloat) {
+                webView?.evaluateJavaScript("window.applySidebarWidth(\(width));")
+            }
+            guard let window = webView?.window, !window.styleMask.contains(.fullScreen) else {
+                finish(base)
+                return
+            }
+            let delta = requested - base
+            guard abs(delta) >= 0.01 else {
+                finish(base)
+                return
+            }
+            var frame = window.frame
+            let oldWidth = frame.width
+            let rightEdge = frame.maxX
+            var newWidth = oldWidth + delta
+            if window.minSize.width > 0 { newWidth = max(newWidth, window.minSize.width) }
+            if window.maxSize.width > 0 { newWidth = min(newWidth, window.maxSize.width) }
+            if let visibleFrame = window.screen?.visibleFrame {
+                newWidth = min(newWidth, rightEdge - visibleFrame.minX)
+            }
+            newWidth = max(newWidth, 1)
+            frame.origin.x = rightEdge - newWidth
+            frame.size.width = newWidth
+            window.setFrame(frame, display: true)
+            finish(base + window.frame.width - oldWidth)
         }
 
         func sendActionStatus(_ status: ActionRunner.Status) {

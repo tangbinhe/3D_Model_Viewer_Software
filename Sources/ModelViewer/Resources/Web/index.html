@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>3D Model Viewer</title>
-    <script type="module" crossorigin src="/assets/index-C9kkBwpb.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DWKExorU.css">
+    <script type="module" crossorigin src="/assets/index-DJUE6s5v.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DyqGRukY.css">
   </head>
   <body>
     <div id="app">
@@ -45,9 +45,10 @@
           </template>
           <div class="clean-help">按 H 显示控制界面</div>
         </section>
+        <div id="sidebar-resize-handle" role="separator" aria-label="调整功能区宽度" aria-orientation="vertical" tabindex="0" title="拖动调整功能区宽度，双击恢复默认"></div>
 
         <aside id="control-panel">
-          <section class="control-section">
+          <section class="control-section" data-layout-key="model">
             <div class="section-heading"><span>01</span><h2>模型</h2></div>
             <input id="model-input" type="file" accept=".fbx,.glb,.vrm" multiple hidden />
             <div class="button-row">
@@ -60,7 +61,7 @@
             </div>
           </section>
 
-          <section class="control-section">
+          <section class="control-section" data-layout-key="background">
             <div class="section-heading"><span>02</span><h2>背景</h2></div>
             <div class="swatches">
               <button data-color="#0b1020" class="swatch dark active" title="深色背景"></button>
@@ -76,7 +77,7 @@
             <small class="hint">背景图自动按窗口等比例覆盖；绿幕可用于直播抠像。</small>
           </section>
 
-          <section class="control-section">
+          <section class="control-section" data-layout-key="view">
             <div class="section-heading"><span>03</span><h2>视角</h2></div>
             <div class="action-grid view-grid">
               <button data-view="front" class="active">正面</button>
@@ -89,7 +90,7 @@
             </div>
           </section>
 
-          <section class="control-section">
+          <section class="control-section" data-layout-key="expressions">
             <div class="section-heading"><span>04</span><h2>表情与动作</h2></div>
             <label class="field-label" for="expression-select">VRM 表情</label>
             <div class="inline-control">
@@ -113,7 +114,7 @@
             <small id="rig-hint" class="hint">静态模型支持旋转；骨骼动作需要绑定后的 VRM。</small>
           </section>
 
-          <section class="control-section">
+          <section class="control-section" data-layout-key="danmaku">
             <div class="section-heading"><span>05</span><h2>弹幕互动</h2></div>
             <div class="button-row">
               <button id="toggle-danmaku" class="button primary">添加弹幕窗口</button>
@@ -133,7 +134,7 @@
             <small class="hint">可拖动浮窗标题栏调整位置，或在右侧编辑标题、提示词和宽高；浮窗仅展示 API 弹幕，各窗口互不影响。</small>
           </section>
 
-          <section class="control-section">
+          <section class="control-section" data-layout-key="action">
             <div class="section-heading"><span>06</span><h2>Action 前台</h2></div>
             <label class="field-label" for="action-live-id">live_id（选填）</label>
             <input id="action-live-id" class="action-live-id" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="32" autocomplete="off" placeholder="留空为排练模式" />
@@ -155,7 +156,7 @@
             <small class="hint">live_id 保存在本机，留空为排练模式；运行时可直接发送老板弹幕。日志保留最近 12,000 字符。</small>
           </section>
 
-          <details class="api-details">
+          <details class="api-details" data-layout-key="api">
             <summary>本地 API 调用与参数文档</summary>
             <div class="api-base">
               <span>基础地址 · 仅本机访问</span>

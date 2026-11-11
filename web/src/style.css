@@ -38,17 +38,61 @@ button:disabled { opacity: .38; cursor: not-allowed; }
 .button.secondary { background: #1a2130; border-color: var(--line); }
 .button.ghost { background: transparent; border-color: var(--line); color: var(--muted); }
 kbd { font: 10px inherit; opacity: .55; border: 1px solid rgba(255,255,255,.2); border-radius: 4px; padding: 1px 4px; margin-left: 5px; }
-.workspace { min-height: 0; flex: 1; display: grid; grid-template-columns: minmax(0,1fr) 324px; }
+.workspace {
+  --sidebar-width: 324px;
+  position: relative; min-height: 0; flex: 1; display: grid;
+  grid-template-columns: minmax(0,1fr) var(--sidebar-width);
+}
 #viewport {
   position: relative; min-width: 0; overflow: hidden; background-color: #0b1020;
   background-position: center; background-size: cover; outline: none;
 }
 #viewport canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-#control-panel { overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); padding: 20px; }
+#control-panel { min-width: 0; overflow-y: auto; background: var(--panel); border-left: 1px solid var(--line); padding: 20px; }
+#sidebar-resize-handle {
+  position: absolute; z-index: 8; top: 0; bottom: 0; right: calc(var(--sidebar-width) - 5px);
+  width: 10px; cursor: ew-resize; touch-action: none; outline: none;
+}
+#sidebar-resize-handle::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px;
+  background: transparent; transition: background .16s ease;
+}
+#sidebar-resize-handle:hover::after, #sidebar-resize-handle:focus-visible::after,
+body.sidebar-resizing #sidebar-resize-handle::after { background: #a99fff88; }
+body.sidebar-resizing, body.module-resizing { user-select: none; }
+body.sidebar-resizing { cursor: ew-resize; }
+body.module-resizing { cursor: ns-resize; }
+.control-section, #control-panel > .api-details { position: relative; }
 .control-section { padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--line); }
+.control-section-body { min-width: 0; min-height: 0; }
+.resizable-module.is-resized > .control-section-body {
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable;
+}
+.module-resize-handle {
+  position: absolute; z-index: 4; left: 0; right: 0; bottom: -7px; width: 100%; height: 14px;
+  margin: 0; padding: 0; border: 0; background: transparent; cursor: ns-resize; touch-action: none; outline: none;
+}
+.module-resize-handle::after {
+  content: ""; position: absolute; left: 50%; bottom: 5px; width: 34px; height: 3px;
+  border-radius: 3px; background: #8e99ad55; transform: translateX(-50%); transition: background .16s ease;
+}
+.module-resize-handle:hover::after, .module-resize-handle:focus-visible::after { background: #a99fff; }
+#control-panel > .api-details:not([open]) > .module-resize-handle { display: none; }
 .section-heading { display: flex; align-items: center; gap: 9px; margin-bottom: 15px; }
 .section-heading span { color: var(--accent-light); font: 600 10px ui-monospace, monospace; }
 .section-heading h2 { margin: 0; font-size: 13px; letter-spacing: .06em; }
+.module-toggle {
+  flex: 0 0 24px; width: 24px; height: 24px; margin: -5px -4px -5px auto; padding: 0;
+  display: grid; place-items: center; border: 0; border-radius: 6px; color: var(--muted); background: transparent;
+}
+.module-toggle:hover, .module-toggle:focus-visible { color: var(--accent-light); background: #202a3a; outline: none; }
+.module-toggle::before {
+  content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-1px,-1px);
+}
+.module-toggle[aria-expanded="false"]::before { transform: rotate(-45deg) translate(-1px,1px); }
+.control-section.is-collapsed { padding-bottom: 14px; }
+.control-section.is-collapsed .section-heading { margin-bottom: 0; }
 .button-row { display: flex; gap: 8px; }
 .button-row .button { flex: 1; }
 .model-card { margin-top: 12px; padding: 12px; border-radius: 9px; background: #0c111a; border: 1px solid var(--line); }
@@ -173,13 +217,13 @@ select { min-width: 0; flex: 1; color: #edf2ff; background: #0c111a; border: 1px
 #toast.visible { opacity: 1; transform: translate(-50%,0); }
 #toast.error { border-color: #ff6f7d66; color: #ffb4bc; }
 .clean-help { display: none; position: absolute; right: 18px; bottom: 16px; color: rgba(255,255,255,.35); font-size: 10px; }
-body.clean .app-header, body.clean #control-panel { display: none; }
+body.clean .app-header, body.clean #control-panel, body.clean #sidebar-resize-handle { display: none; }
 body.clean .workspace { display: block; }
 body.clean #viewport { position: fixed; inset: 0; }
 body.clean .clean-help { display: block; }
 body.clean #empty-state { display: none; }
 @media (max-width: 900px) {
-  .workspace { grid-template-columns: minmax(0,1fr) 280px; }
+  .workspace { --sidebar-width: 280px; }
   .connection { display: none; }
   .app-header { padding: 0 14px; }
   .api-table thead { display: none; }
