@@ -23,7 +23,7 @@ usage() {
   scripts/release-install.sh --no-launch     安装后不自动启动
   scripts/release-install.sh --build-only    只构建并校验 Release 产物，不退出或替换已安装应用
 
-旧版会移入废纸篓，脚本不会删除 Debug 产物或清空废纸篓。
+正式安装会删除 DerivedData 中的 Debug 测试包，旧正式版移入废纸篓，不会清空废纸篓。
 EOF
 }
 
@@ -75,6 +75,12 @@ if is_running; then
     exit 1
   fi
 fi
+
+test_apps=( "$HOME"/Library/Developer/Xcode/DerivedData/3D_Model_Viewer-*/Build/Products/Debug/"$APP_NAME"(N) )
+for test_app in $test_apps; do
+  log "删除 Debug 测试包：$test_app"
+  rm -rf "$test_app"
+done
 
 if [[ -e "$DEST" ]]; then
   BACKUP="$HOME/.Trash/3D Model Viewer-old-$(date +%Y%m%d-%H%M%S)-$$.app"
