@@ -58,6 +58,16 @@ let toastTimer;
 let lastCommand = null;
 let statusPostPending = false;
 let statusDirty = false;
+const actionQueue = [];
+const actionEvents = [];
+const triggerCooldowns = new Map();
+const actionPriorities = { manual: 0, api: 1, danmaku: 2 };
+const actionNames = { idle: '待机', nod: '点头', wave: '挥手', bow: '鞠躬', spin: '旋转' };
+let currentActionItem = null;
+let actionStarting = false;
+let actionSchedulerVersion = 0;
+let nextActionItemId = 1;
+let danmakuTriggersEnabled = localStorage.getItem('danmakuTriggersEnabled') === 'true';
 
 function showToast(message, error = false) {
   const toast = $('#toast');
@@ -559,7 +569,7 @@ function disposeObject(object) {
 }
 
 function clearModel() {
-  stopAction();
+  stopActionQueue(false);
   for (const child of [...content.children]) {
     content.remove(child);
     disposeObject(child);
@@ -761,6 +771,11 @@ async function playMotion(id) {
     action.clampWhenFinished = true;
   }
   activeMotion = { id: entry.id, name: entry.name, kind: entry.kind, mixer, action, clip };
+  if (entry.kind === 'pose') {
+    mixer.addEventListener('finished', () => {
+      if (activeMotion?.mixer === mixer) activeMotion.finished = true;
+    });
+  }
   animationMixers.push(mixer);
   action.play();
   $('#motion-select').value = entry.id;
@@ -858,7 +873,236 @@ function updateAction() {
   if (progress >= 1) stopAction();
 }
 
-async function applyCommand(command) {
+function actionLabel(name) {
+  return motionEntries.find((entry) => entry.id === name)?.name || actionNames[name] || name;
+}
+
+function isLoopingAction(name) {
+  return name === 'idle' || motionEntries.find((entry) => entry.id === name)?.kind === 'motion';
+}
+
+function validateActionRequest(name) {
+  const supported = ['idle', 'nod', 'wave', 'bow', 'spin'];
+  if (!supported.includes(name) && !motionEntries.some((entry) => entry.id === name)) {
+    throw new Error(`不支持的动作：${name}`);
+  }
+  if (name !== 'spin' && !vrms[0]?.humanoid) throw new Error('当前模型尚未绑定，骨骼动作需要 VRM');
+}
+
+function updateCommandState(item, state, error = null) {
+  if (!item.commandId || lastCommand?.id !== item.commandId) return;
+  lastCommand = {
+    ...lastCommand,
+    ok: state === 'failed' ? false : lastCommand.ok,
+    state,
+    error,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+function renderActionScheduler() {
+  const runState = $('#action-run-state');
+  runState.textContent = currentActionItem
+    ? `${actionStarting ? '载入' : isLoopingAction(currentActionItem.name) ? '循环' : '当前'} · ${actionLabel(currentActionItem.name)}`
+    : activeMotion?.finished ? `保持 · ${activeMotion.name}` : '当前 · 无动作';
+  runState.classList.toggle('running', Boolean(currentActionItem || activeMotion?.finished));
+  const queueCount = $('#action-queue-count');
+  queueCount.textContent = `等待 · ${actionQueue.length}`;
+  queueCount.classList.toggle('waiting', actionQueue.length > 0);
+  $('#clear-action-queue').disabled = actionQueue.length === 0;
+  for (const button of document.querySelectorAll('[data-action]')) {
+    const name = button.dataset.action;
+    if (name === 'stop') continue;
+    button.classList.toggle('active', currentActionItem?.name === name);
+    button.classList.toggle('queued', actionQueue.some((item) => item.name === name));
+  }
+  const log = $('#action-event-log');
+  log.replaceChildren();
+  for (const event of actionEvents) {
+    const row = document.createElement('li');
+    row.className = event.kind;
+    const time = document.createElement('time');
+    time.textContent = event.at.toLocaleTimeString('zh-CN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const message = document.createElement('span');
+    message.textContent = event.message;
+    row.append(time, message);
+    log.append(row);
+  }
+  log.scrollTop = log.scrollHeight;
+}
+
+function recordActionEvent(message, kind = 'info') {
+  actionEvents.push({ message, kind, at: new Date() });
+  if (actionEvents.length > 8) actionEvents.splice(0, actionEvents.length - 8);
+  renderActionScheduler();
+}
+
+function serializeActionItem(item) {
+  return item ? {
+    id: item.id,
+    commandId: item.commandId,
+    name: item.name,
+    label: actionLabel(item.name),
+    source: item.source,
+    state: item.state,
+    queuedAt: item.queuedAt,
+  } : null;
+}
+
+async function pumpActionQueue() {
+  if (actionStarting || currentActionItem || activeAction || (activeMotion && !activeMotion.finished) || !actionQueue.length) {
+    renderActionScheduler();
+    return;
+  }
+  const item = actionQueue.shift();
+  const version = actionSchedulerVersion;
+  currentActionItem = item;
+  actionStarting = true;
+  item.state = 'starting';
+  updateCommandState(item, 'starting');
+  renderActionScheduler();
+  publishStatus();
+  try {
+    const started = await startAction(item.name, item.duration);
+    if (started === false || version !== actionSchedulerVersion) {
+      if (currentActionItem === item) currentActionItem = null;
+      return;
+    }
+    item.state = 'running';
+    updateCommandState(item, 'running');
+    recordActionEvent(`${isLoopingAction(item.name) ? '循环' : '执行'} · ${actionLabel(item.name)}`);
+  } catch (error) {
+    if (version === actionSchedulerVersion) {
+      if (currentActionItem === item) currentActionItem = null;
+      item.state = 'failed';
+      updateCommandState(item, 'failed', error.message);
+      recordActionEvent(`失败 · ${actionLabel(item.name)}：${error.message}`, 'error');
+      showToast(error.message, true);
+    }
+  } finally {
+    actionStarting = false;
+    renderActionScheduler();
+    publishStatus();
+    if (!currentActionItem && actionQueue.length) queueMicrotask(pumpActionQueue);
+  }
+}
+
+function enqueueAction(name, duration = 2, source = 'manual', commandId = null) {
+  const value = String(name);
+  validateActionRequest(value);
+  if (source === 'danmaku' && (currentActionItem?.name === value || actionQueue.some((item) => item.source === 'danmaku' && item.name === value))) {
+    recordActionEvent(`已合并 · ${actionLabel(value)}`);
+    return false;
+  }
+  if (actionQueue.length >= 20) throw new Error('动作等待队列已满，请先清空等待或停止全部');
+  if (!actionStarting && (activeAction?.duration === Infinity || activeMotion?.kind === 'motion')) {
+    if (currentActionItem) updateCommandState(currentActionItem, 'superseded');
+    currentActionItem = null;
+    actionSchedulerVersion += 1;
+    stopAction();
+  }
+  const item = {
+    id: nextActionItemId++,
+    commandId,
+    name: value,
+    duration,
+    source,
+    priority: actionPriorities[source] ?? 1,
+    state: 'queued',
+    queuedAt: new Date().toISOString(),
+  };
+  actionQueue.push(item);
+  actionQueue.sort((a, b) => a.priority - b.priority || a.id - b.id);
+  recordActionEvent(`${currentActionItem || actionStarting ? '等待' : '接收'} · ${actionLabel(value)}${source === 'danmaku' ? '（弹幕）' : ''}`);
+  publishStatus();
+  queueMicrotask(pumpActionQueue);
+  return true;
+}
+
+function updateActionQueue() {
+  if (currentActionItem && !actionStarting && !activeAction && (!activeMotion || activeMotion.finished)) {
+    const completed = currentActionItem;
+    currentActionItem = null;
+    completed.state = 'completed';
+    updateCommandState(completed, 'completed');
+    recordActionEvent(`完成 · ${actionLabel(completed.name)}`, 'success');
+    publishStatus();
+  }
+  if (!currentActionItem && actionQueue.length) void pumpActionQueue();
+}
+
+function clearQueuedActions() {
+  if (!actionQueue.length) return;
+  const count = actionQueue.length;
+  for (const item of actionQueue) {
+    item.state = 'superseded';
+    updateCommandState(item, 'superseded');
+  }
+  actionQueue.length = 0;
+  recordActionEvent(`已清空 ${count} 条等待动作`);
+  publishStatus();
+}
+
+function stopActionQueue(notify = true) {
+  const hadWork = Boolean(currentActionItem || activeAction || activeMotion || actionQueue.length);
+  actionSchedulerVersion += 1;
+  if (currentActionItem) {
+    currentActionItem.state = 'superseded';
+    updateCommandState(currentActionItem, 'superseded');
+  }
+  for (const item of actionQueue) {
+    item.state = 'superseded';
+    updateCommandState(item, 'superseded');
+  }
+  actionQueue.length = 0;
+  currentActionItem = null;
+  stopAction();
+  if (notify && hadWork) recordActionEvent('已停止当前动作并清空等待');
+  else renderActionScheduler();
+  publishStatus();
+}
+
+const danmakuActionAliases = {
+  点头: 'nod',
+  挥手: 'wave',
+  打个招呼: 'wave',
+  鞠躬: 'bow',
+  旋转: 'spin',
+  转一圈: 'spin',
+};
+const danmakuExpressionAliases = {
+  开心: 'happy',
+  难过: 'sad',
+  生气: 'angry',
+  惊讶: 'surprised',
+};
+
+function routeDanmakuTrigger(text) {
+  if (!danmakuTriggersEnabled) return false;
+  const value = String(text).trim();
+  const action = value === '停止动作' ? 'stop' : danmakuActionAliases[value] || motionEntries.find((entry) => entry.name === value)?.id;
+  const expression = danmakuExpressionAliases[value];
+  if (!action && !expression) return false;
+  const now = Date.now();
+  if (now - (triggerCooldowns.get(value) || 0) < 3000) {
+    recordActionEvent(`冷却 · ${value}`);
+    publishStatus();
+    return false;
+  }
+  if (expression) {
+    setExpression(expression);
+    recordActionEvent(`弹幕表情 · ${value}`);
+  } else if (action === 'stop') {
+    stopActionQueue();
+  } else {
+    enqueueAction(action, 2, 'danmaku');
+  }
+  triggerCooldowns.set(value, now);
+  publishStatus();
+  return true;
+}
+
+async function applyCommand(command, commandId = null) {
   const results = [];
   try {
     if (command.background !== undefined) setBackground(String(command.background));
@@ -866,17 +1110,28 @@ async function applyCommand(command) {
     if (command.clean !== undefined) document.body.classList.toggle('clean', Boolean(command.clean));
     const danmakuId = command.danmakuId === undefined ? undefined : Number(command.danmakuId);
     if (danmakuId !== undefined) setActiveDanmakuWindow(danmakuId);
-    if (command.danmaku !== undefined) addDanmaku(String(command.danmaku), danmakuId);
+    if (command.danmaku !== undefined) {
+      const text = String(command.danmaku);
+      addDanmaku(text, danmakuId);
+      routeDanmakuTrigger(text);
+    }
     if (command.danmakuVisible !== undefined) setDanmakuVisible(Boolean(command.danmakuVisible), danmakuId);
     if (command.expression !== undefined) setExpression(String(command.expression), command.weight ?? 1);
     if (command.action !== undefined) {
-      if (command.action === 'stop') stopAction();
-      else await startAction(String(command.action), command.duration ?? 2);
+      if (command.action === 'stop') stopActionQueue();
+      else enqueueAction(String(command.action), command.duration ?? 2, 'api', commandId);
     }
-    lastCommand = { ok: true, command, at: new Date().toISOString() };
+    lastCommand = {
+      id: commandId,
+      ok: true,
+      state: command.action !== undefined && command.action !== 'stop' ? 'queued' : 'completed',
+      error: null,
+      command,
+      at: new Date().toISOString(),
+    };
     results.push('执行成功');
   } catch (error) {
-    lastCommand = { ok: false, error: error.message, command, at: new Date().toISOString() };
+    lastCommand = { id: commandId, ok: false, state: 'failed', error: error.message, command, at: new Date().toISOString() };
     results.push(error.message);
     showToast(error.message, true);
   }
@@ -922,6 +1177,12 @@ async function publishStatus() {
           messages: item.messages.map(({ text, at }) => ({ text, at })),
         })),
         lastCommand,
+        actionQueue: {
+          current: serializeActionItem(currentActionItem),
+          pending: actionQueue.map(serializeActionItem),
+        },
+        actionEvents: actionEvents.map(({ message, kind, at }) => ({ message, kind, at: at.toISOString() })),
+        danmakuTriggers: { enabled: danmakuTriggersEnabled, cooldownSeconds: 3 },
       };
       try {
         await fetch('/api/status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(status) });
@@ -942,7 +1203,7 @@ async function pollCommands() {
     const response = await fetch('/api/commands/poll');
     if (!response.ok) return;
     const commands = await response.json();
-    for (const item of commands) await applyCommand(item.command);
+    for (const item of commands) await applyCommand(item.command, item.id);
   } catch {
     // The renderer remains usable when the optional native API is unavailable.
   }
@@ -963,20 +1224,26 @@ $('#clear-background').addEventListener('click', () => setBackground($('#backgro
 $('#background-color').addEventListener('input', (event) => setBackground(event.target.value, false));
 document.querySelectorAll('[data-color]').forEach((button) => button.addEventListener('click', () => setBackground(button.dataset.color)));
 document.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
-document.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', async () => {
+document.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', () => {
   try {
-    if (button.dataset.action === 'stop') stopAction();
-    else await startAction(button.dataset.action);
+    if (button.dataset.action === 'stop') stopActionQueue();
+    else enqueueAction(button.dataset.action);
   } catch (error) {
     showToast(error.message, true);
   }
 }));
-$('#play-motion').addEventListener('click', async () => {
+$('#play-motion').addEventListener('click', () => {
   try {
-    await playMotion($('#motion-select').value);
+    enqueueAction($('#motion-select').value);
   } catch (error) {
     showToast(error.message, true);
   }
+});
+$('#clear-action-queue').addEventListener('click', clearQueuedActions);
+$('#clear-action-events').addEventListener('click', () => {
+  actionEvents.length = 0;
+  renderActionScheduler();
+  publishStatus();
 });
 $('#expression-select').addEventListener('change', (event) => {
   try { setExpression(event.target.value); } catch (error) { showToast(error.message, true); }
@@ -1018,6 +1285,15 @@ for (const [selector, property] of [
   field.addEventListener('change', renderDanmakuEditor);
 }
 renderDanmakuWindowList();
+const danmakuTriggerToggle = $('#danmaku-trigger-enabled');
+danmakuTriggerToggle.checked = danmakuTriggersEnabled;
+danmakuTriggerToggle.addEventListener('change', () => {
+  danmakuTriggersEnabled = danmakuTriggerToggle.checked;
+  localStorage.setItem('danmakuTriggersEnabled', String(danmakuTriggersEnabled));
+  recordActionEvent(danmakuTriggersEnabled ? '弹幕精确触发已开启' : '弹幕精确触发已关闭');
+  publishStatus();
+});
+renderActionScheduler();
 
 const actionLiveIdField = $('#action-live-id');
 const actionDanmakuField = $('#action-danmaku');
@@ -1111,6 +1387,7 @@ function animate() {
   const delta = Math.min(clock.getDelta(), 0.05);
   updateAction();
   for (const mixer of animationMixers) mixer.update(delta);
+  updateActionQueue();
   for (const vrm of vrms) vrm.update(delta);
   controls.update();
   renderer.render(scene, camera);

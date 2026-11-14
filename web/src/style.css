@@ -111,6 +111,24 @@ select { min-width: 0; flex: 1; color: #edf2ff; background: #0c111a; border: 1px
 .action-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 7px; }
 .action-grid button { border: 1px solid var(--line); background: #171e2a; border-radius: 8px; padding: 8px 4px; font-size: 11px; }
 .action-grid button:hover { background: #202a3a; border-color: #7c6cff66; }
+.action-grid button.queued { border-color: #e6c77d88; color: #e6c77d; }
+.interaction-status { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.status-pill { padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: #0c111a; font-size: 9px; line-height: 1.4; }
+.status-pill.running { border-color: #43d6a055; color: #9aefbf; background: #43d6a00c; }
+.status-pill.waiting { border-color: #e6c77d44; color: #e6c77d; }
+.interaction-log-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; }
+.interaction-log-heading .field-label { margin: 0; }
+.interaction-log-heading > div { display: flex; gap: 5px; }
+.interaction-log-heading .button { padding: 4px 7px; font-size: 9px; }
+.interaction-log { max-height: 142px; margin: 8px 0 0; padding: 0; overflow-y: auto; list-style: none; border: 1px solid var(--line); border-radius: 8px; background: #090d14; }
+.interaction-log:empty { display: none; }
+.interaction-log li { display: grid; grid-template-columns: 38px minmax(0,1fr); gap: 7px; padding: 7px 9px; color: #b9c5d9; font-size: 9px; line-height: 1.5; }
+.interaction-log li + li { border-top: 1px solid var(--line); }
+.interaction-log time { color: #69758a; font: 9px ui-monospace, monospace; }
+.interaction-log li.error span { color: #ffb4bc; }
+.interaction-log li.success span { color: #9aefbf; }
+.trigger-toggle { display: flex; align-items: center; gap: 8px; margin-top: 13px; color: #d9e0ed; font-size: 11px; cursor: pointer; }
+.trigger-toggle input { width: 15px; height: 15px; margin: 0; accent-color: var(--accent); }
 .api-details { color: var(--muted); font-size: 11px; line-height: 1.55; padding-bottom: 20px; }
 .api-details summary { color: #edf2ff; cursor: pointer; font-weight: 600; }
 .api-details > summary { margin-bottom: 12px; font-size: 12px; }

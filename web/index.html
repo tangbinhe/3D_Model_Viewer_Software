@@ -107,8 +107,20 @@
               <button data-action="wave">挥手</button>
               <button data-action="bow">鞠躬</button>
               <button data-action="spin">旋转</button>
-              <button data-action="stop">停止</button>
+              <button data-action="stop">停止全部</button>
             </div>
+            <div class="interaction-status" aria-live="polite">
+              <span id="action-run-state" class="status-pill">当前 · 无动作</span>
+              <span id="action-queue-count" class="status-pill">等待 · 0</span>
+            </div>
+            <div class="interaction-log-heading">
+              <label class="field-label">最近结果</label>
+              <div>
+                <button id="clear-action-queue" class="button ghost" type="button">清空等待</button>
+                <button id="clear-action-events" class="button ghost" type="button">清空记录</button>
+              </div>
+            </div>
+            <ol id="action-event-log" class="interaction-log" role="log" aria-label="动作执行记录"></ol>
             <small id="rig-hint" class="hint">静态模型支持旋转；骨骼动作需要绑定后的 VRM。</small>
           </section>
 
@@ -129,6 +141,11 @@
               </div>
               <small class="hint">尺寸单位为像素，浮窗始终限制在 3D 视口内。</small>
             </div>
+            <label class="trigger-toggle" for="danmaku-trigger-enabled">
+              <input id="danmaku-trigger-enabled" type="checkbox" />
+              <span>弹幕精确触发人物</span>
+            </label>
+            <small class="hint">支持点头、挥手、鞠躬、旋转、停止动作、开心、难过、生气、惊讶，以及动作库中文名；3 秒内重复指令自动合并。</small>
             <small class="hint">可拖动浮窗标题栏调整位置，或在右侧编辑标题、提示词和宽高；浮窗仅展示 API 弹幕，各窗口互不影响。</small>
           </section>
 
@@ -194,7 +211,7 @@
                 <tbody>
                   <tr><td><code>expression</code></td><td>字符串<br />缺省不修改</td><td>VRM 表情名。<code>""</code> 或 <code>neutral</code> 恢复无表情。</td></tr>
                   <tr><td><code>weight</code></td><td>数字<br />默认 1</td><td>表情强度，范围 0–1。只辅助 expression，不能单独发送。</td></tr>
-                  <tr><td><code>action</code></td><td>字符串<br />缺省不修改</td><td>基础动作名或动作库 ID；<code>stop</code> 停止当前动作。</td></tr>
+                  <tr><td><code>action</code></td><td>字符串<br />缺省不修改</td><td>基础动作名或动作库 ID，进入最多 20 条的等待队列；<code>stop</code> 停止当前动作并清空等待。</td></tr>
                   <tr><td><code>duration</code></td><td>数字<br />默认 2 秒</td><td>范围 0.2–30，只控制基础动作，不能单独发送；动作库 VRMA 使用自身时长。</td></tr>
                   <tr><td><code>background</code></td><td>字符串<br />缺省不修改</td><td>纯色背景，仅支持 <code>#RRGGBB</code>，例如 <code>#00FF00</code>。</td></tr>
                   <tr><td><code>view</code></td><td>字符串<br />缺省不修改</td><td>固定视角：front、right、left、back、top、perspective、fit。</td></tr>
@@ -238,9 +255,10 @@
               <div class="api-values">
                 <code>idle</code><code>nod</code><code>wave</code><code>bow</code><code>spin</code><code>stop</code>
               </div>
-              <p>依次为待机、点头、挥手、鞠躬、旋转、停止。idle 持续循环；nod、wave、bow、spin 使用 duration，结束后停止。</p>
+              <p>依次为待机、点头、挥手、鞠躬、旋转、停止全部。idle 持续循环；nod、wave、bow、spin 使用 duration，完成后自动执行下一条等待动作。</p>
+              <p>有限动作按界面操作、API、弹幕的优先级排队，同级按提交顺序执行，最多等待 20 条。idle 和 motion 循环动画遇到新动作时会被替换，不会堵住队列。</p>
               <h3>角色动作库</h3>
-              <p>当前内置 132 项：14 个 motion 动画循环播放，118 个 pose 姿势播放一次后定格保持。action 直接传动作 ID，不要传文件路径。</p>
+              <p>当前内置 132 项：14 个 motion 动画循环播放，118 个 pose 姿势播放一次后定格保持，同时推进等待队列。action 直接传动作 ID，不要传文件路径。</p>
               <div class="api-values vertical">
                 <code>pixiv-fit-02</code><code>fit-vroid86-03</code><code>fit-sf-04</code>
               </div>
@@ -282,9 +300,9 @@
 
             <details class="api-doc-section">
               <summary>7. 状态、返回码与错误处理</summary>
-              <p>POST /api/command 返回 <strong>HTTP 202</strong> 只表示指令已进入播放器队列，不代表模型已成功执行。随后查询 GET /api/status，检查 <code>lastCommand.ok</code>；失败时查看 <code>lastCommand.error</code>。</p>
+              <p>POST /api/command 返回 <strong>HTTP 202</strong> 只表示指令已进入本地接收队列，不代表模型已成功执行。随后查询 GET /api/status，通过 <code>lastCommand.id</code> 对应返回 ID，并检查 <code>lastCommand.state</code> 和 <code>lastCommand.ok</code>；失败时查看 <code>lastCommand.error</code>。</p>
               <pre>curl -s http://127.0.0.1:8765/api/status | python3 -m json.tool</pre>
-              <p>lastCommand 还包含原始 command 和执行时间 at。不存在的表情或动作可能先返回 202，再由 lastCommand 报告错误；JSON、字段、类型或范围校验失败会直接返回 400，队列已满返回 429。</p>
+              <p>lastCommand 还包含原始 command 和接收时间 at。动作状态依次为 queued、starting、running、completed；循环动作保持 running，被替换时为 superseded，失败为 failed。不存在的表情或动作可能先返回 202，再由 lastCommand 报告错误；JSON、字段、类型或范围校验失败会直接返回 400，接收队列已满返回 429，动作等待队列已满由 lastCommand 报告失败。</p>
               <h3>GET /api/status 主要字段</h3>
               <div class="api-status-fields">
                 <code>ready</code><span>播放器状态上报是否就绪</span>
@@ -297,13 +315,17 @@
                 <code>danmakuId</code><span>当前 API 目标窗口编号，无窗口为 null</span>
                 <code>danmakuVisible / danmakuMessages</code><span>当前目标窗口的显示状态和最近 50 条消息</span>
                 <code>danmakuWindows</code><span>全部窗口的编号、标题、显示状态、自定义空提示、位置尺寸和消息</span>
-                <code>lastCommand</code><span>最近一条指令的实际执行结果</span>
+                <code>lastCommand</code><span>最近一条指令的 ID、阶段、实际结果和错误</span>
+                <code>actionQueue</code><span>当前动作与等待队列的来源、状态和命令 ID</span>
+                <code>actionEvents</code><span>最近 8 条接收、执行、完成、合并和失败记录</span>
+                <code>danmakuTriggers</code><span>弹幕精确触发开关及冷却秒数</span>
               </div>
             </details>
 
             <details class="api-doc-section">
               <summary>8. 弹幕互动 API</summary>
               <p>可添加多个独立浮窗，右侧列表分别选择、显示或隐藏。选择窗口后，在右侧编辑标题、无弹幕提示词、位置和宽高，也可拖动标题栏调整位置；浮窗仅展示 API 弹幕，不提供手动发送。各窗口的标题、消息、提示、位置和大小互不影响。</p>
+              <p>开启“弹幕精确触发人物”后，API 和 Action 收到的聊天文字可精确匹配点头、挥手、打个招呼、鞠躬、旋转、转一圈、停止动作、开心、难过、生气、惊讶，以及当前动作库中文名。普通聊天不会触发；3 秒内相同文字会合并，不解析任意 LLM 输出。</p>
               <p>向当前窗口展示文字；没有窗口时自动创建：</p>
               <pre>curl -X POST http://127.0.0.1:8765/api/command \
   -H 'Content-Type: application/json' \
